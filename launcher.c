@@ -11,6 +11,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#define LAUNCHER_TITLE_MAX 80
+#define LAUNCHER_TITLE_PREFIX "lager "
+
 void launcher_resolve_programs(struct launcher_programs *programs)
 {
     programs->qemu = find_program(NULL, "qemu-system-loongarch64",
@@ -25,6 +28,50 @@ void launcher_resolve_programs(struct launcher_programs *programs)
     if (access("/dev/kvm", R_OK | W_OK) < 0)
         die("cannot access /dev/kvm: %s; add the current user to the kvm group",
             strerror(errno));
+}
+
+static char title_char(char ch)
+{
+    return (unsigned char)ch < ' ' || ch == ',' ? ' ' : ch;
+}
+
+char *launcher_command_title(char *const argv[])
+{
+    char *title;
+    size_t wanted = 0;
+    size_t limit;
+    size_t out = 0;
+    const size_t prefix_len = strlen(LAUNCHER_TITLE_PREFIX);
+
+    if (!argv || !argv[0])
+        return xstrdup("lager");
+    wanted = prefix_len;
+    for (size_t i = 0; argv[i]; i++) {
+        if (i)
+            wanted++;
+        wanted += strlen(argv[i]);
+    }
+    limit = wanted > LAUNCHER_TITLE_MAX ? LAUNCHER_TITLE_MAX : wanted;
+    title = xmalloc(limit + 1);
+    while (out < prefix_len && out < limit) {
+        title[out] = LAUNCHER_TITLE_PREFIX[out];
+        out++;
+    }
+    for (size_t i = 0; argv[i] && out < limit; i++) {
+        const char *arg = argv[i];
+
+        if (i)
+            title[out++] = ' ';
+        while (*arg && out < limit)
+            title[out++] = title_char(*arg++);
+    }
+    if (wanted > LAUNCHER_TITLE_MAX) {
+        title[LAUNCHER_TITLE_MAX - 3] = '.';
+        title[LAUNCHER_TITLE_MAX - 2] = '.';
+        title[LAUNCHER_TITLE_MAX - 1] = '.';
+    }
+    title[out] = '\0';
+    return title;
 }
 
 pid_t launcher_spawn(char *const argv[], bool quiet, const char *log_path)
@@ -86,14 +133,18 @@ void launcher_build_virtiofsd_command(struct strvec *args, const char *program,
 void launcher_build_qemu_command(struct host_ctx *features, const char *program,
                                  const char *kernel, const char *initramfs,
                                  const char *rootfs_socket, int vcpus,
-                                 unsigned long mem_mib)
+                                 unsigned long mem_mib, const char *title)
 {
     struct config_header *header = features->header;
     char *kernel_args;
     char *chardev;
     char *fs_device;
+    char *name;
 
     vec_push_copy(features->qemu, program);
+    vec_push_copy(features->qemu, "-name");
+    name = xasprintf("guest=%s", title);
+    vec_push(features->qemu, name);
     vec_push_copy(features->qemu, "-machine");
     vec_push_copy(features->qemu,
                   "virt,accel=kvm,memory-backend=mem,highmem-mmio=on");

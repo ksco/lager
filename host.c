@@ -195,6 +195,7 @@ int host_main(int argc, char **argv)
     char *kernel;
     char *modules_dir;
     char *log_path;
+    char *qemu_title;
     char runtime[] = "/tmp/lager-XXXXXX";
     char *initramfs;
     char *rootfs_socket;
@@ -220,6 +221,7 @@ int host_main(int argc, char **argv)
     }
     if (argc < 2)
         die("no command specified; usage: lager COMMAND [ARGS...]");
+    qemu_title = launcher_command_title(&argv[1]);
     vcpus = configure_cpus();
     ram = host_ram_mib();
     mem_mib = ram * 4 / 5;
@@ -288,7 +290,7 @@ int host_main(int argc, char **argv)
     launcher_build_virtiofsd_command(&virtiofsd, programs.virtiofsd,
                                      rootfs_socket);
     launcher_build_qemu_command(&feature_ctx, programs.qemu, kernel, initramfs,
-                                rootfs_socket, vcpus, mem_mib);
+                                rootfs_socket, vcpus, mem_mib, qemu_title);
 
     raise_nofile_limit();
     prepare_log(log_path);
