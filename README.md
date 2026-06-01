@@ -1,3 +1,4 @@
+![logo](logo.png)
 # lager
 
 `lager` is a launcher for running Box64 workloads on LoongArch systems whose
