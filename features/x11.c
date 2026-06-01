@@ -28,8 +28,16 @@ void feature_x11_host_resolve(struct host_ctx *ctx)
 
 void feature_x11_host_add_env(struct host_ctx *ctx)
 {
+    env_unset(ctx->env, "WAYLAND_DISPLAY");
+    env_unset(ctx->env, "WAYLAND_SOCKET");
     env_set(ctx->env, "DISPLAY=:1");
     env_set(ctx->env, "XAUTHORITY=");
+    env_set(ctx->env, "XDG_SESSION_TYPE=x11");
+    env_set(ctx->env, "GDK_BACKEND=x11");
+    env_set(ctx->env, "QT_QPA_PLATFORM=xcb");
+    env_set(ctx->env, "SDL_VIDEODRIVER=x11");
+    env_set(ctx->env, "CLUTTER_BACKEND=x11");
+    env_set(ctx->env, "ELECTRON_OZONE_PLATFORM_HINT=x11");
 }
 
 void feature_x11_host_add_qemu_options(struct host_ctx *ctx)

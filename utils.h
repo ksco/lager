@@ -36,6 +36,7 @@ char *find_program(const char *requested, const char *name,
                    const char *fallback);
 
 void env_set(struct strvec *env, const char *assignment);
+void env_unset(struct strvec *env, const char *name);
 const char *env_get(const struct strvec *env, const char *name);
 struct strvec copy_host_env(void);
 

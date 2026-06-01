@@ -186,6 +186,28 @@ void env_set(struct strvec *env, const char *assignment)
     vec_push_copy(env, assignment);
 }
 
+void env_unset(struct strvec *env, const char *name)
+{
+    size_t len;
+    size_t i = 0;
+
+    if (!*name || strchr(name, '='))
+        die("environment name must be non-empty and cannot contain '=': %s",
+            name);
+    len = strlen(name);
+    while (i < env->len) {
+        if (strncmp(env->items[i], name, len) == 0 &&
+            env->items[i][len] == '=') {
+            free(env->items[i]);
+            memmove(&env->items[i], &env->items[i + 1],
+                    (env->len - i) * sizeof(*env->items));
+            env->len--;
+            continue;
+        }
+        i++;
+    }
+}
+
 const char *env_get(const struct strvec *env, const char *name)
 {
     size_t len = strlen(name);
