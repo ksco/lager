@@ -16,7 +16,7 @@
 
 void feature_x11_host_resolve(struct host_ctx *ctx)
 {
-    if (!ctx->x11)
+    if (!ctx->guest_x11)
         return;
     feature_require_executable("/usr/libexec/Xorg", "Xorg", "x11 support", "xorg-server");
     feature_require_executable("/usr/lib/systemd/systemd-udevd", "systemd-udevd", "x11 support", "systemd");

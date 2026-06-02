@@ -20,6 +20,7 @@ enum config_type {
     CONFIG_NULLABLE_STRING,
     CONFIG_STRING,
     CONFIG_POLICY,
+    CONFIG_GPU_BACKEND,
     CONFIG_ENVIRONMENT,
 };
 
@@ -41,6 +42,8 @@ static const struct config_option options[] = {
            "Guest kernel module tree. null infers it from the kernel name.", "null or an absolute path"),
     OPTION("resolution", CONFIG_STRING, resolution, "Guest Xorg mode and QEMU GTK window size.",
            "WIDTHxHEIGHT or an empty string"),
+    OPTION("gpu_backend", CONFIG_GPU_BACKEND, gpu_backend,
+           "QEMU virtio-gpu backend. auto prefers rutabaga when QEMU supports it.", "auto, virgl, or rutabaga"),
     OPTION("gpu_compat", CONFIG_POLICY, gpu_compat, "Patch the guest GPU module when mixed page sizes require it.",
            "auto, on, or off"),
     OPTION("environment", CONFIG_ENVIRONMENT, env, "Environment values to override inside the guest.",
@@ -77,6 +80,7 @@ static void init_lager_config(struct lager_config *cfg)
 {
     memset(cfg, 0, sizeof(*cfg));
     cfg->gpu_compat = FEATURE_AUTO;
+    cfg->gpu_backend = GPU_BACKEND_AUTO;
     cfg->resolution = xstrdup("1024x768");
 }
 
@@ -143,6 +147,30 @@ static const char *policy_name(enum feature_policy policy)
     die("invalid feature policy");
 }
 
+static enum gpu_backend parse_gpu_backend(const char *value, const char *name)
+{
+    if (!strcmp(value, "auto"))
+        return GPU_BACKEND_AUTO;
+    if (!strcmp(value, "virgl"))
+        return GPU_BACKEND_VIRGL;
+    if (!strcmp(value, "rutabaga"))
+        return GPU_BACKEND_RUTABAGA;
+    die("config key \"%s\" must be \"auto\", \"virgl\", or \"rutabaga\"", name);
+}
+
+static const char *gpu_backend_name(enum gpu_backend backend)
+{
+    switch (backend) {
+    case GPU_BACKEND_AUTO:
+        return "auto";
+    case GPU_BACKEND_VIRGL:
+        return "virgl";
+    case GPU_BACKEND_RUTABAGA:
+        return "rutabaga";
+    }
+    die("invalid GPU backend");
+}
+
 static void parse_environment(struct strvec *env, struct json_value_s *value)
 {
     struct json_object_s *object = json_value_as_object(value);
@@ -185,6 +213,13 @@ static void apply_option(struct lager_config *cfg, const struct config_option *o
         char *text = dup_json_string(value, option->name, false);
 
         *(enum feature_policy *)field = parse_policy(text, option->name);
+        free(text);
+        break;
+    }
+    case CONFIG_GPU_BACKEND: {
+        char *text = dup_json_string(value, option->name, false);
+
+        *(enum gpu_backend *)field = parse_gpu_backend(text, option->name);
         free(text);
         break;
     }
@@ -304,6 +339,9 @@ static void write_option_value(FILE *file, const struct lager_config *cfg, const
         break;
     case CONFIG_POLICY:
         write_json_string(file, policy_name(*(const enum feature_policy *)field));
+        break;
+    case CONFIG_GPU_BACKEND:
+        write_json_string(file, gpu_backend_name(*(const enum gpu_backend *)field));
         break;
     case CONFIG_ENVIRONMENT: {
         const struct strvec *env = field;
@@ -441,6 +479,9 @@ static void set_cli_option(struct config_state *state, const struct config_optio
     case CONFIG_POLICY:
         *(enum feature_policy *)field = parse_policy(value, option->name);
         break;
+    case CONFIG_GPU_BACKEND:
+        *(enum gpu_backend *)field = parse_gpu_backend(value, option->name);
+        break;
     case CONFIG_ENVIRONMENT:
         parse_cli_json(&state->cfg, option, value);
         break;
@@ -463,6 +504,9 @@ static void copy_option(struct lager_config *target, const struct lager_config *
         break;
     case CONFIG_POLICY:
         *(enum feature_policy *)to = *(const enum feature_policy *)from;
+        break;
+    case CONFIG_GPU_BACKEND:
+        *(enum gpu_backend *)to = *(const enum gpu_backend *)from;
         break;
     case CONFIG_ENVIRONMENT: {
         struct strvec *target_vec = to;

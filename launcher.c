@@ -14,6 +14,7 @@
 #define LAUNCHER_TITLE_MAX 80
 #define LAUNCHER_TITLE_PREFIX "lager "
 #define QEMU_DEVICE_HELP_MAX (256 * 1024)
+#define QEMU_RUTABAGA_GPU_DEVICE "virtio-gpu-rutabaga-pci"
 
 static bool qemu_device_has_property(const char *program, const char *device, const char *property)
 {
@@ -98,6 +99,8 @@ void launcher_resolve_programs(struct launcher_programs *programs)
         die("cannot access /dev/kvm: %s; add the current user to the kvm group", strerror(errno));
     programs->qemu_has_drm_native_context =
         qemu_device_has_property(programs->qemu, "virtio-gpu-gl-pci", "drm_native_context");
+    programs->qemu_has_rutabaga_gpu =
+        qemu_device_has_property(programs->qemu, QEMU_RUTABAGA_GPU_DEVICE, "cross-domain");
 }
 
 static char title_char(char ch)

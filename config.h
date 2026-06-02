@@ -9,11 +9,18 @@ enum feature_policy {
     FEATURE_ON,
 };
 
+enum gpu_backend {
+    GPU_BACKEND_AUTO,
+    GPU_BACKEND_VIRGL,
+    GPU_BACKEND_RUTABAGA,
+};
+
 struct lager_config {
     char *kernel;
     char *modules_dir;
     char *resolution;
     enum feature_policy gpu_compat;
+    enum gpu_backend gpu_backend;
     struct strvec env;
 };
 

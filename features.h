@@ -15,11 +15,13 @@ struct host_ctx {
     struct strvec *env;
     struct strvec *qemu;
     const char *runtime;
+    const char *qemu_program;
     const char *modules_dir;
     const char *box64;
     unsigned long gpu_hostmem_mib;
     bool qemu_has_drm_native_context;
-    bool x11;
+    bool qemu_has_rutabaga_gpu;
+    bool guest_x11;
     char *compatible_gpu_module;
     char *audio_backend;
 };
