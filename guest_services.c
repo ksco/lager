@@ -21,8 +21,6 @@ static struct guest_service services[] = {
     [GUEST_SERVICE_DUNST] = {"dunst", -1},
     [GUEST_SERVICE_SYSTEM_BUS] = {"system dbus-daemon", -1},
     [GUEST_SERVICE_SESSION_BUS] = {"session dbus-daemon", -1},
-    [GUEST_SERVICE_POLKIT] = {"polkitd", -1},
-    [GUEST_SERVICE_UPOWER] = {"upowerd", -1},
     [GUEST_SERVICE_AUDIO] = {"pulseaudio", -1},
 };
 

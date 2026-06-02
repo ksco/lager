@@ -23,7 +23,6 @@ add_executable(lager
     features/network.c
     features/notifications.c
     features/openbox.c
-    features/power.c
     features/registry.c
     features/x11.c
     modules.c

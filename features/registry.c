@@ -11,7 +11,6 @@
 #include "network.h"
 #include "notifications.h"
 #include "openbox.h"
-#include "power.h"
 #include "x11.h"
 
 enum feature_condition {
@@ -65,14 +64,6 @@ static const struct feature features[] = {
         .host_add_env = feature_dbus_host_add_env,
         .guest_setup = feature_dbus_guest_setup,
         .guest_stop = feature_dbus_guest_stop,
-    },
-    {
-        .name = "power services",
-        .flag = CFG_POWER,
-        .requires = CFG_DBUS,
-        .condition = FEATURE_ALWAYS,
-        .guest_setup = feature_power_guest_setup,
-        .guest_stop = feature_power_guest_stop,
     },
     {
         .name = "audio",

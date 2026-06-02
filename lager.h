@@ -15,7 +15,6 @@ enum {
     CFG_BINFMT = 1U << 4,
     CFG_AUDIO = 1U << 5,
     CFG_DBUS = 1U << 6,
-    CFG_POWER = 1U << 7,
     CFG_NOTIFICATIONS = 1U << 8,
     CFG_OPENBOX = 1U << 9,
 };

@@ -34,25 +34,14 @@ Required:
 - dunst
 - zstd
 
-Optional:
-
-- polkit
-- upower
-
 The invoking user must be able to access `/dev/kvm`.
 
 ### AOSC OS
 
-Install the common runtime dependencies:
+Install runtime dependencies:
 
 ```bash
 sudo oma install qemu passt virtiofsd dbus pulseaudio xorg-server openbox dunst zstd
-```
-
-Install optional power-management integration:
-
-```bash
-sudo oma install polkit upower
 ```
 
 Add your user to the `kvm` group:
