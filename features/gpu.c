@@ -28,13 +28,14 @@ void feature_gpu_host_add_env(struct host_ctx *ctx)
 void feature_gpu_host_add_qemu_options(struct host_ctx *ctx)
 {
     char *res_suffix = NULL;
+    const char *native_context_suffix = ctx->qemu_has_drm_native_context ? ",drm_native_context=on" : "";
     char *device;
 
     if ((ctx->header->flags & CFG_X11) && ctx->header->resolution_width > 0)
         res_suffix = xasprintf(",xres=%u,yres=%u", ctx->header->resolution_width, ctx->header->resolution_height);
     device = xasprintf("virtio-gpu-gl-pci,blob=on,venus=on,"
-                       "hostmem=%luM,max_hostmem=%luM%s",
-                       ctx->gpu_hostmem_mib, ctx->gpu_hostmem_mib, res_suffix ? res_suffix : "");
+                       "hostmem=%luM,max_hostmem=%luM%s%s",
+                       ctx->gpu_hostmem_mib, ctx->gpu_hostmem_mib, native_context_suffix, res_suffix ? res_suffix : "");
     free(res_suffix);
     vec_push_copy(ctx->qemu, "-display");
     vec_push_copy(ctx->qemu, ctx->header->flags & CFG_X11 ? "gtk,gl=on,zoom-to-fit=off" : "egl-headless,gl=on");

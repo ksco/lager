@@ -13,6 +13,77 @@
 
 #define LAUNCHER_TITLE_MAX 80
 #define LAUNCHER_TITLE_PREFIX "lager "
+#define QEMU_DEVICE_HELP_MAX (256 * 1024)
+
+static bool qemu_device_has_property(const char *program, const char *device, const char *property)
+{
+    struct bytebuf output = {0};
+    char buf[4096];
+    char *device_help;
+    char *needle;
+    int pipe_fds[2];
+    int status = 0;
+    pid_t pid;
+    bool exited = false;
+    bool found = false;
+
+    if (pipe(pipe_fds) < 0) {
+        warnx("cannot probe %s %s: pipe: %s", program, device, strerror(errno));
+        return false;
+    }
+    pid = fork();
+    if (pid < 0) {
+        warnx("cannot probe %s %s: fork: %s", program, device, strerror(errno));
+        close(pipe_fds[0]);
+        close(pipe_fds[1]);
+        return false;
+    }
+    if (pid == 0) {
+        close(pipe_fds[0]);
+        if (dup2(pipe_fds[1], STDOUT_FILENO) < 0 || dup2(pipe_fds[1], STDERR_FILENO) < 0)
+            _exit(127);
+        if (pipe_fds[1] > STDERR_FILENO)
+            close(pipe_fds[1]);
+        device_help = xasprintf("%s,help", device);
+        execl(program, program, "-device", device_help, (char *)NULL);
+        _exit(127);
+    }
+    close(pipe_fds[1]);
+    for (;;) {
+        ssize_t got = read(pipe_fds[0], buf, sizeof(buf));
+
+        if (got < 0) {
+            if (errno == EINTR)
+                continue;
+            break;
+        }
+        if (got == 0)
+            break;
+        if (output.len + (size_t)got <= QEMU_DEVICE_HELP_MAX)
+            buf_append(&output, buf, (size_t)got);
+    }
+    close(pipe_fds[0]);
+    for (;;) {
+        pid_t got = waitpid(pid, &status, 0);
+
+        if (got == pid) {
+            exited = true;
+            break;
+        }
+        if (got < 0 && errno != EINTR) {
+            warnx("cannot probe %s %s: waitpid: %s", program, device, strerror(errno));
+            break;
+        }
+    }
+    if (exited && WIFEXITED(status) && WEXITSTATUS(status) == 0) {
+        buf_append(&output, "", 1);
+        needle = xasprintf("\n  %s=", property);
+        found = strstr((char *)output.data, needle) != NULL;
+        free(needle);
+    }
+    free(output.data);
+    return found;
+}
 
 void launcher_resolve_programs(struct launcher_programs *programs)
 {
@@ -25,6 +96,8 @@ void launcher_resolve_programs(struct launcher_programs *programs)
         die("virtiofsd is required; install the system virtiofsd package");
     if (access("/dev/kvm", R_OK | W_OK) < 0)
         die("cannot access /dev/kvm: %s; add the current user to the kvm group", strerror(errno));
+    programs->qemu_has_drm_native_context =
+        qemu_device_has_property(programs->qemu, "virtio-gpu-gl-pci", "drm_native_context");
 }
 
 static char title_char(char ch)

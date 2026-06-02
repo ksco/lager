@@ -18,6 +18,7 @@ struct host_ctx {
     const char *modules_dir;
     const char *box64;
     unsigned long gpu_hostmem_mib;
+    bool qemu_has_drm_native_context;
     bool x11;
     char *compatible_gpu_module;
     char *audio_backend;

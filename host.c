@@ -240,6 +240,7 @@ int host_main(int argc, char **argv)
     feature_ctx.runtime = runtime;
     feature_ctx.modules_dir = modules_dir;
     feature_ctx.gpu_hostmem_mib = gpu_hostmem_mib;
+    feature_ctx.qemu_has_drm_native_context = programs.qemu_has_drm_native_context;
     feature_ctx.x11 = x11;
     features_host_resolve(&feature_ctx);
     if (!mkdtemp(runtime))

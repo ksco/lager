@@ -10,6 +10,7 @@
 struct launcher_programs {
     char *qemu;
     char *virtiofsd;
+    bool qemu_has_drm_native_context;
 };
 
 void launcher_resolve_programs(struct launcher_programs *programs);
