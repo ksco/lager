@@ -13,7 +13,6 @@ void silence_output_fd(int fd);
 void silence_output(const char *path);
 
 pid_t spawn_stderr_tee(char *const argv[], int *stderr_fd);
-int wait_for_stderr_tee(pid_t pid, int stderr_fd, int log_fd,
-                        const char *name);
+int wait_for_stderr_tee(pid_t pid, int stderr_fd, int log_fd, const char *name);
 
 #endif

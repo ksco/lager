@@ -35,8 +35,7 @@ static void archive_pad(struct archive *ar)
     archive_write(ar, zeroes, padding);
 }
 
-static void archive_header(struct archive *ar, const char *name, mode_t mode,
-                           size_t size, unsigned int rdev_major,
+static void archive_header(struct archive *ar, const char *name, mode_t mode, size_t size, unsigned int rdev_major,
                            unsigned int rdev_minor)
 {
     char header[111];
@@ -48,8 +47,7 @@ static void archive_header(struct archive *ar, const char *name, mode_t mode,
     len = snprintf(header, sizeof(header),
                    "070701%08x%08x%08x%08x%08x%08x%08x"
                    "%08x%08x%08x%08x%08x%08x",
-                   ar->ino++, (unsigned int)mode, 0U, 0U, 1U,
-                   (unsigned int)time(NULL), (unsigned int)size, 0U, 0U,
+                   ar->ino++, (unsigned int)mode, 0U, 0U, 1U, (unsigned int)time(NULL), (unsigned int)size, 0U, 0U,
                    rdev_major, rdev_minor, (unsigned int)name_size, 0U);
     if (len != 110)
         die("internal initramfs header error");
@@ -63,22 +61,19 @@ static void archive_directory(struct archive *ar, const char *name)
     archive_header(ar, name, S_IFDIR | 0755, 0, 0, 0);
 }
 
-static void archive_device(struct archive *ar, const char *name, mode_t mode,
-                           unsigned int major, unsigned int minor)
+static void archive_device(struct archive *ar, const char *name, mode_t mode, unsigned int major, unsigned int minor)
 {
     archive_header(ar, name, S_IFCHR | mode, 0, major, minor);
 }
 
-static void archive_memory(struct archive *ar, const char *name,
-                           const void *data, size_t size, mode_t mode)
+static void archive_memory(struct archive *ar, const char *name, const void *data, size_t size, mode_t mode)
 {
     archive_header(ar, name, S_IFREG | mode, size, 0, 0);
     archive_write(ar, data, size);
     archive_pad(ar);
 }
 
-static void archive_file(struct archive *ar, const char *name, const char *path,
-                         mode_t mode)
+static void archive_file(struct archive *ar, const char *name, const char *path, mode_t mode)
 {
     struct stat st;
     FILE *input;
@@ -108,8 +103,7 @@ static void archive_finish(struct archive *ar)
         die("close initramfs: %s", strerror(errno));
 }
 
-void make_initramfs(const char *path, const char *modules_dir,
-                    const struct bytebuf *config,
+void make_initramfs(const char *path, const char *modules_dir, const struct bytebuf *config,
                     const char *compatible_gpu_module)
 {
     static const char *transport_modules[] = {
@@ -140,8 +134,7 @@ void make_initramfs(const char *path, const char *modules_dir,
     archive_device(&ar, "dev/console", 0600, 5, 1);
     archive_file(&ar, "init", self, 0755);
     archive_memory(&ar, "lager/config", config->data, config->len, 0600);
-    for (i = 0; i < sizeof(transport_modules) / sizeof(transport_modules[0]);
-         i++) {
+    for (i = 0; i < sizeof(transport_modules) / sizeof(transport_modules[0]); i++) {
         char *module = find_module(modules_dir, transport_modules[i]);
         const char *base = strrchr(module, '/');
         char *archive_name;
@@ -152,8 +145,7 @@ void make_initramfs(const char *path, const char *modules_dir,
         free(archive_name);
         free(module);
     }
-    for (i = 0; i < sizeof(virtiofs_modules) / sizeof(virtiofs_modules[0]);
-         i++) {
+    for (i = 0; i < sizeof(virtiofs_modules) / sizeof(virtiofs_modules[0]); i++) {
         char *module = find_module(modules_dir, virtiofs_modules[i]);
         const char *base = strrchr(module, '/');
         char *archive_name;

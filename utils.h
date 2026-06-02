@@ -32,8 +32,7 @@ void mkdir_ok(const char *path, mode_t mode);
 bool path_exists(const char *path);
 bool executable(const char *path);
 char *find_in_path(const char *name);
-char *find_program(const char *requested, const char *name,
-                   const char *fallback);
+char *find_program(const char *requested, const char *name, const char *fallback);
 
 void env_set(struct strvec *env, const char *assignment);
 void env_unset(struct strvec *env, const char *name);

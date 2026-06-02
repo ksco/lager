@@ -20,10 +20,8 @@ static char *config_string(char **cursor, char *end)
     return start;
 }
 
-struct bytebuf make_guest_config(const struct config_header *header,
-                                 const char *workdir, const char *box64,
-                                 const char *log_path, char *const guest_argv[],
-                                 const struct strvec *env)
+struct bytebuf make_guest_config(const struct config_header *header, const char *workdir, const char *box64,
+                                 const char *log_path, char *const guest_argv[], const struct strvec *env)
 {
     struct bytebuf buf = {0};
     uint32_t i;
@@ -51,13 +49,11 @@ struct guest_config read_guest_config(void)
     if (size < sizeof(cfg.header))
         die("truncated guest config header");
     memcpy(&cfg.header, cfg.storage, sizeof(cfg.header));
-    if (memcmp(cfg.header.magic, CFG_MAGIC, sizeof(cfg.header.magic)) ||
-        cfg.header.version != CFG_VERSION)
+    if (memcmp(cfg.header.magic, CFG_MAGIC, sizeof(cfg.header.magic)) || cfg.header.version != CFG_VERSION)
         die("unsupported guest config");
     cursor = (char *)cfg.storage + sizeof(cfg.header);
     end = (char *)cfg.storage + size;
-    if (cfg.header.argc == 0 || cfg.header.argc > 4096 ||
-        cfg.header.envc > 16384)
+    if (cfg.header.argc == 0 || cfg.header.argc > 4096 || cfg.header.envc > 16384)
         die("invalid guest config counts");
     cfg.workdir = config_string(&cursor, end);
     cfg.box64 = config_string(&cursor, end);

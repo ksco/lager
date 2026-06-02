@@ -16,18 +16,15 @@
 
 void launcher_resolve_programs(struct launcher_programs *programs)
 {
-    programs->qemu = find_program(NULL, "qemu-system-loongarch64",
-                                  "/usr/bin/qemu-system-loongarch64");
-    programs->virtiofsd =
-        find_program(NULL, "virtiofsd", "/usr/libexec/virtiofsd");
+    programs->qemu = find_program(NULL, "qemu-system-loongarch64", "/usr/bin/qemu-system-loongarch64");
+    programs->virtiofsd = find_program(NULL, "virtiofsd", "/usr/libexec/virtiofsd");
     if (!programs->qemu)
         die("qemu-system-loongarch64 is required; install the system qemu "
             "package");
     if (!programs->virtiofsd)
         die("virtiofsd is required; install the system virtiofsd package");
     if (access("/dev/kvm", R_OK | W_OK) < 0)
-        die("cannot access /dev/kvm: %s; add the current user to the kvm group",
-            strerror(errno));
+        die("cannot access /dev/kvm: %s; add the current user to the kvm group", strerror(errno));
 }
 
 static char title_char(char ch)
@@ -118,8 +115,7 @@ void launcher_terminate_child(pid_t *pid)
     *pid = -1;
 }
 
-void launcher_build_virtiofsd_command(struct strvec *args, const char *program,
-                                      const char *socket_path)
+void launcher_build_virtiofsd_command(struct strvec *args, const char *program, const char *socket_path)
 {
     vec_push_copy(args, program);
     vec_push_copy(args, "--socket-path");
@@ -130,10 +126,9 @@ void launcher_build_virtiofsd_command(struct strvec *args, const char *program,
     vec_push_copy(args, "none");
 }
 
-void launcher_build_qemu_command(struct host_ctx *features, const char *program,
-                                 const char *kernel, const char *initramfs,
-                                 const char *rootfs_socket, int vcpus,
-                                 unsigned long mem_mib, const char *title)
+void launcher_build_qemu_command(struct host_ctx *features, const char *program, const char *kernel,
+                                 const char *initramfs, const char *rootfs_socket, int vcpus, unsigned long mem_mib,
+                                 const char *title)
 {
     struct config_header *header = features->header;
     char *kernel_args;
@@ -146,8 +141,7 @@ void launcher_build_qemu_command(struct host_ctx *features, const char *program,
     name = xasprintf("guest=%s", title);
     vec_push(features->qemu, name);
     vec_push_copy(features->qemu, "-machine");
-    vec_push_copy(features->qemu,
-                  "virt,accel=kvm,memory-backend=mem,highmem-mmio=on");
+    vec_push_copy(features->qemu, "virt,accel=kvm,memory-backend=mem,highmem-mmio=on");
     vec_push_copy(features->qemu, "-cpu");
     vec_push_copy(features->qemu, "host");
     vec_push_copy(features->qemu, "-nodefaults");
@@ -163,9 +157,7 @@ void launcher_build_qemu_command(struct host_ctx *features, const char *program,
     vec_push_copy(features->qemu, "-m");
     vec_push(features->qemu, xasprintf("%luM", mem_mib));
     vec_push_copy(features->qemu, "-object");
-    vec_push(
-        features->qemu,
-        xasprintf("memory-backend-memfd,id=mem,size=%luM,share=on", mem_mib));
+    vec_push(features->qemu, xasprintf("memory-backend-memfd,id=mem,size=%luM,share=on", mem_mib));
     vec_push_copy(features->qemu, "-kernel");
     vec_push_copy(features->qemu, kernel);
     vec_push_copy(features->qemu, "-initrd");
@@ -175,8 +167,7 @@ void launcher_build_qemu_command(struct host_ctx *features, const char *program,
                           "panic=-1 reboot=t init=/init");
     if ((header->flags & CFG_X11) && header->resolution_width > 0) {
         char *with_resolution =
-            xasprintf("%s video=Virtual-1:%ux%u@60", kernel_args,
-                      header->resolution_width, header->resolution_height);
+            xasprintf("%s video=Virtual-1:%ux%u@60", kernel_args, header->resolution_width, header->resolution_height);
 
         free(kernel_args);
         kernel_args = with_resolution;

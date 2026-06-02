@@ -3,8 +3,7 @@
 
 #include "utils.h"
 
-void make_initramfs(const char *path, const char *modules_dir,
-                    const struct bytebuf *config,
+void make_initramfs(const char *path, const char *modules_dir, const struct bytebuf *config,
                     const char *compatible_gpu_module);
 
 #endif

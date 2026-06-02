@@ -34,8 +34,7 @@ struct feature {
     void (*guest_stop)(struct guest_ctx *ctx);
 };
 
-static bool feature_applies(const struct feature *feature,
-                            const struct host_ctx *ctx)
+static bool feature_applies(const struct feature *feature, const struct host_ctx *ctx)
 {
     switch (feature->condition) {
     case FEATURE_ALWAYS:
@@ -183,8 +182,7 @@ void features_host_add_qemu_options(struct host_ctx *ctx)
     size_t i;
 
     for (i = 0; i < FEATURE_COUNT; i++) {
-        if (feature_applies(&features[i], ctx) &&
-            features[i].host_add_qemu_options)
+        if (feature_applies(&features[i], ctx) && features[i].host_add_qemu_options)
             features[i].host_add_qemu_options(ctx);
     }
 }
@@ -194,8 +192,7 @@ void features_guest_setup(struct guest_ctx *ctx)
     size_t i;
 
     for (i = 0; i < FEATURE_COUNT; i++) {
-        if ((ctx->cfg->header.flags & features[i].flag) &&
-            features[i].guest_setup)
+        if ((ctx->cfg->header.flags & features[i].flag) && features[i].guest_setup)
             features[i].guest_setup(ctx);
     }
 }
@@ -205,8 +202,7 @@ void features_guest_stop(struct guest_ctx *ctx)
     size_t i = FEATURE_COUNT;
 
     while (i--) {
-        if ((ctx->cfg->header.flags & features[i].flag) &&
-            features[i].guest_stop)
+        if ((ctx->cfg->header.flags & features[i].flag) && features[i].guest_stop)
             features[i].guest_stop(ctx);
     }
 }

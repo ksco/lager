@@ -45,8 +45,7 @@ static char *host_audio_backend(void)
 
 void feature_audio_host_resolve(struct host_ctx *ctx)
 {
-    feature_require_executable("/usr/bin/pulseaudio", "pulseaudio",
-                               "audio support", "pulseaudio");
+    feature_require_executable("/usr/bin/pulseaudio", "pulseaudio", "audio support", "pulseaudio");
     ctx->audio_backend = host_audio_backend();
     if (!ctx->audio_backend)
         die("no PipeWire or PulseAudio server found; audio requires a running "
@@ -55,8 +54,7 @@ void feature_audio_host_resolve(struct host_ctx *ctx)
 
 void feature_audio_host_add_env(struct host_ctx *ctx)
 {
-    char *assignment = xasprintf("PULSE_SERVER=unix:/run/user/%lu/pulse/native",
-                                 (unsigned long)getuid());
+    char *assignment = xasprintf("PULSE_SERVER=unix:/run/user/%lu/pulse/native", (unsigned long)getuid());
 
     env_set(ctx->env, assignment);
     free(assignment);
@@ -99,8 +97,7 @@ static void setup_guest_audio(const struct guest_config *cfg, int log_fd)
         if (!S_ISCHR(st.st_mode))
             continue;
         found_node = true;
-        if (chown(nodes.gl_pathv[i], (uid_t)cfg->header.uid,
-                  (gid_t)cfg->header.gid) < 0)
+        if (chown(nodes.gl_pathv[i], (uid_t)cfg->header.uid, (gid_t)cfg->header.gid) < 0)
             warnx("cannot chown %s: %s", nodes.gl_pathv[i], strerror(errno));
         if (chmod(nodes.gl_pathv[i], 0600) < 0)
             warnx("cannot chmod %s: %s", nodes.gl_pathv[i], strerror(errno));
@@ -110,15 +107,12 @@ static void setup_guest_audio(const struct guest_config *cfg, int log_fd)
         die("guest audio device did not expose any character devices");
     pulse_socket = xasprintf("/run/user/%u/pulse/native", cfg->header.uid);
     if (guest_service_fork(GUEST_SERVICE_AUDIO) == 0) {
-        if (setgid((gid_t)cfg->header.gid) < 0 ||
-            setuid((uid_t)cfg->header.uid) < 0)
+        if (setgid((gid_t)cfg->header.gid) < 0 || setuid((uid_t)cfg->header.uid) < 0)
             die("drop pulseaudio privileges: %s", strerror(errno));
         environ = cfg->env;
         silence_output_fd(log_fd);
-        execl("/usr/bin/pulseaudio", "pulseaudio", "--daemonize=no",
-              "--exit-idle-time=-1", "--log-target=stderr", "-n", "-L",
-              "module-native-protocol-unix", "-L",
-              "module-alsa-sink device=hw:0,0 sink_name=virtio_snd", "-L",
+        execl("/usr/bin/pulseaudio", "pulseaudio", "--daemonize=no", "--exit-idle-time=-1", "--log-target=stderr", "-n",
+              "-L", "module-native-protocol-unix", "-L", "module-alsa-sink device=hw:0,0 sink_name=virtio_snd", "-L",
               "module-always-sink", (char *)NULL);
         die("exec pulseaudio: %s", strerror(errno));
     }

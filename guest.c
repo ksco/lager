@@ -60,13 +60,11 @@ static void set_guest_clock(const struct config_header *header)
         warnx("cannot set guest clock: %s", strerror(errno));
 }
 
-static void mount_ok(const char *source, const char *target, const char *type,
-                     unsigned long flags, const char *data)
+static void mount_ok(const char *source, const char *target, const char *type, unsigned long flags, const char *data)
 {
     mkdir_ok(target, 0755);
     if (mount(source, target, type, flags, data) < 0 && errno != EBUSY)
-        die("mount %s on %s: %s", source ? source : type, target,
-            strerror(errno));
+        die("mount %s on %s: %s", source ? source : type, target, strerror(errno));
 }
 
 static void symlink_ok(const char *target, const char *path)
@@ -111,9 +109,7 @@ static void load_early_module(const char *name)
     for (i = 0; i < sizeof(suffixes) / sizeof(suffixes[0]); i++) {
         char *path = xasprintf("/modules/%s%s", name, suffixes[i]);
         int fd = open(path, O_RDONLY | O_CLOEXEC);
-        int flags = i + 1 < sizeof(suffixes) / sizeof(suffixes[0])
-                        ? MODULE_INIT_COMPRESSED_FILE
-                        : 0;
+        int flags = i + 1 < sizeof(suffixes) / sizeof(suffixes[0]) ? MODULE_INIT_COMPRESSED_FILE : 0;
 
         free(path);
         if (fd < 0)
@@ -193,8 +189,8 @@ int guest_init(void)
     mount_ok("tmpfs", "/dev/shm", "tmpfs", 0, "mode=1777");
 
     sethostname("lager", 5);
-    guest_modprobe(cfg.header.flags & CFG_GPU, cfg.header.flags & CFG_NET,
-                   cfg.header.flags & CFG_AUDIO, cfg.header.flags & CFG_X11);
+    guest_modprobe(cfg.header.flags & CFG_GPU, cfg.header.flags & CFG_NET, cfg.header.flags & CFG_AUDIO,
+                   cfg.header.flags & CFG_X11);
     reopen_guest_console();
     feature_ctx.cfg = &cfg;
     feature_ctx.log_fd = log_fd;

@@ -31,24 +31,19 @@ struct config_option {
     const char *choices;
 };
 
-#define OPTION(name, type, field, description, choices)                        \
+#define OPTION(name, type, field, description, choices)                                                                \
     {name, type, offsetof(struct lager_config, field), description, choices}
 
 static const struct config_option options[] = {
-    OPTION("kernel", CONFIG_NULLABLE_STRING, kernel,
-           "Guest kernel path. null discovers an installed 4 KiB kernel.",
+    OPTION("kernel", CONFIG_NULLABLE_STRING, kernel, "Guest kernel path. null discovers an installed 4 KiB kernel.",
            "null or an absolute path"),
     OPTION("modules_dir", CONFIG_NULLABLE_STRING, modules_dir,
-           "Guest kernel module tree. null infers it from the kernel name.",
-           "null or an absolute path"),
-    OPTION("resolution", CONFIG_STRING, resolution,
-           "Guest Xorg mode and QEMU GTK window size.",
+           "Guest kernel module tree. null infers it from the kernel name.", "null or an absolute path"),
+    OPTION("resolution", CONFIG_STRING, resolution, "Guest Xorg mode and QEMU GTK window size.",
            "WIDTHxHEIGHT or an empty string"),
-    OPTION("gpu_compat", CONFIG_POLICY, gpu_compat,
-           "Patch the guest GPU module when mixed page sizes require it.",
+    OPTION("gpu_compat", CONFIG_POLICY, gpu_compat, "Patch the guest GPU module when mixed page sizes require it.",
            "auto, on, or off"),
-    OPTION("environment", CONFIG_ENVIRONMENT, env,
-           "Environment values to override inside the guest.",
+    OPTION("environment", CONFIG_ENVIRONMENT, env, "Environment values to override inside the guest.",
            "JSON object; set one entry with environment.NAME VALUE"),
 };
 
@@ -85,14 +80,12 @@ static void init_lager_config(struct lager_config *cfg)
     cfg->resolution = xstrdup("1024x768");
 }
 
-static const struct config_option *find_option(const char *name, size_t len,
-                                               size_t *index_out)
+static const struct config_option *find_option(const char *name, size_t len, size_t *index_out)
 {
     size_t i;
 
     for (i = 0; i < OPTION_COUNT; i++) {
-        if (strlen(options[i].name) == len &&
-            !memcmp(options[i].name, name, len)) {
+        if (strlen(options[i].name) == len && !memcmp(options[i].name, name, len)) {
             if (index_out)
                 *index_out = i;
             return &options[i];
@@ -101,20 +94,17 @@ static const struct config_option *find_option(const char *name, size_t len,
     return NULL;
 }
 
-static void *option_field(struct lager_config *cfg,
-                          const struct config_option *option)
+static void *option_field(struct lager_config *cfg, const struct config_option *option)
 {
     return (unsigned char *)cfg + option->offset;
 }
 
-static const void *const_option_field(const struct lager_config *cfg,
-                                      const struct config_option *option)
+static const void *const_option_field(const struct lager_config *cfg, const struct config_option *option)
 {
     return (const unsigned char *)cfg + option->offset;
 }
 
-static char *dup_json_string(struct json_value_s *value, const char *name,
-                             bool nullable)
+static char *dup_json_string(struct json_value_s *value, const char *name, bool nullable)
 {
     struct json_string_s *string;
 
@@ -166,13 +156,11 @@ static void parse_environment(struct strvec *env, struct json_value_s *value)
         char *value_string;
         char *assignment;
 
-        if (!element->name->string_size ||
-            memchr(element->name->string, '=', element->name->string_size))
+        if (!element->name->string_size || memchr(element->name->string, '=', element->name->string_size))
             die("config environment names must be non-empty and cannot contain "
                 "'='");
         name = xstrndup(element->name->string, element->name->string_size);
-        value_string =
-            dup_json_string(element->value, "environment value", false);
+        value_string = dup_json_string(element->value, "environment value", false);
         assignment = xasprintf("%s=%s", name, value_string);
         vec_push(env, assignment);
         free(name);
@@ -180,9 +168,7 @@ static void parse_environment(struct strvec *env, struct json_value_s *value)
     }
 }
 
-static void apply_option(struct lager_config *cfg,
-                         const struct config_option *option,
-                         struct json_value_s *value)
+static void apply_option(struct lager_config *cfg, const struct config_option *option, struct json_value_s *value)
 {
     void *field = option_field(cfg, option);
 
@@ -219,11 +205,9 @@ static void apply_config(struct config_state *state, struct json_value_s *root)
         const struct config_option *option;
         size_t index;
 
-        option = find_option(element->name->string, element->name->string_size,
-                             &index);
+        option = find_option(element->name->string, element->name->string_size, &index);
         if (!option)
-            die("unknown config key: %.*s", (int)element->name->string_size,
-                element->name->string);
+            die("unknown config key: %.*s", (int)element->name->string_size, element->name->string);
         apply_option(&state->cfg, option, element->value);
         state->present[index] = true;
     }
@@ -242,15 +226,6 @@ static char *config_path(void)
 {
     char *dir = config_dir();
     char *path = xasprintf("%s/config.json", dir);
-
-    free(dir);
-    return path;
-}
-
-static char *legacy_config_path(void)
-{
-    char *dir = config_dir();
-    char *path = xasprintf("%s/config.jsonc", dir);
 
     free(dir);
     return path;
@@ -312,8 +287,7 @@ static void write_json_string(FILE *file, const char *value)
     fputc('"', file);
 }
 
-static void write_option_value(FILE *file, const struct lager_config *cfg,
-                               const struct config_option *option)
+static void write_option_value(FILE *file, const struct lager_config *cfg, const struct config_option *option)
 {
     const void *field = const_option_field(cfg, option);
     size_t i;
@@ -329,8 +303,7 @@ static void write_option_value(FILE *file, const struct lager_config *cfg,
         write_json_string(file, *(char *const *)field);
         break;
     case CONFIG_POLICY:
-        write_json_string(file,
-                          policy_name(*(const enum feature_policy *)field));
+        write_json_string(file, policy_name(*(const enum feature_policy *)field));
         break;
     case CONFIG_ENVIRONMENT: {
         const struct strvec *env = field;
@@ -354,8 +327,7 @@ static void write_option_value(FILE *file, const struct lager_config *cfg,
     }
 }
 
-static void write_config_object(FILE *file, const struct config_state *state,
-                                bool only_present)
+static void write_config_object(FILE *file, const struct config_state *state, bool only_present)
 {
     bool wrote = false;
     size_t i;
@@ -396,8 +368,7 @@ static void save_config(const char *path, const struct config_state *state)
     free(temporary);
 }
 
-static void parse_config_file(struct config_state *state, const char *path,
-                              size_t flags)
+static void parse_config_file(struct config_state *state, const char *path)
 {
     struct json_parse_result_s result = {0};
     struct json_value_s *root;
@@ -405,10 +376,9 @@ static void parse_config_file(struct config_state *state, const char *path,
     size_t size;
 
     text = read_file(path, MAX_CONFIG_SIZE, &size);
-    root = json_parse_ex(text, size, flags, NULL, NULL, &result);
+    root = json_parse_ex(text, size, json_parse_flags_default, NULL, NULL, &result);
     if (!root)
-        die("parse %s:%zu:%zu: JSON error %zu", path, result.error_line_no,
-            result.error_row_no, result.error);
+        die("parse %s:%zu:%zu: JSON error %zu", path, result.error_line_no, result.error_row_no, result.error);
     apply_config(state, root);
     free(root);
     free(text);
@@ -416,24 +386,11 @@ static void parse_config_file(struct config_state *state, const char *path,
 
 static void prepare_config_file(struct config_state *state, const char *path)
 {
-    char *legacy_path;
-
     ensure_config_dir();
     if (path_exists(path))
         return;
-    legacy_path = legacy_config_path();
-    if (path_exists(legacy_path)) {
-        parse_config_file(state, legacy_path,
-                          json_parse_flags_allow_c_style_comments |
-                              json_parse_flags_allow_trailing_comma);
-        save_config(path, state);
-        fprintf(stderr, "lager: migrated config from %s to %s\n", legacy_path,
-                path);
-    } else {
-        save_config(path, state);
-        fprintf(stderr, "lager: created config: %s\n", path);
-    }
-    free(legacy_path);
+    save_config(path, state);
+    fprintf(stderr, "lager: created config: %s\n", path);
 }
 
 static struct config_state load_config_state(void)
@@ -443,7 +400,7 @@ static struct config_state load_config_state(void)
 
     init_lager_config(&state.cfg);
     prepare_config_file(&state, path);
-    parse_config_file(&state, path, json_parse_flags_default);
+    parse_config_file(&state, path);
     free(path);
     return state;
 }
@@ -455,22 +412,19 @@ void load_lager_config(struct lager_config *cfg)
     *cfg = state.cfg;
 }
 
-static void parse_cli_json(struct lager_config *cfg,
-                           const struct config_option *option, const char *text)
+static void parse_cli_json(struct lager_config *cfg, const struct config_option *option, const char *text)
 {
     struct json_parse_result_s result = {0};
     struct json_value_s *value;
 
-    value = json_parse_ex(text, strlen(text), json_parse_flags_default, NULL,
-                          NULL, &result);
+    value = json_parse_ex(text, strlen(text), json_parse_flags_default, NULL, NULL, &result);
     if (!value)
         die("invalid JSON value for %s", option->name);
     apply_option(cfg, option, value);
     free(value);
 }
 
-static void set_cli_option(struct config_state *state,
-                           const struct config_option *option, size_t index,
+static void set_cli_option(struct config_state *state, const struct config_option *option, size_t index,
                            const char *value)
 {
     void *field = option_field(&state->cfg, option);
@@ -494,8 +448,7 @@ static void set_cli_option(struct config_state *state,
     state->present[index] = true;
 }
 
-static void copy_option(struct lager_config *target,
-                        const struct lager_config *source,
+static void copy_option(struct lager_config *target, const struct lager_config *source,
                         const struct config_option *option)
 {
     void *to = option_field(target, option);
@@ -506,8 +459,7 @@ static void copy_option(struct lager_config *target,
     case CONFIG_NULLABLE_STRING:
     case CONFIG_STRING:
         free(*(char **)to);
-        *(char **)to =
-            *(char *const *)from ? xstrdup(*(char *const *)from) : NULL;
+        *(char **)to = *(char *const *)from ? xstrdup(*(char *const *)from) : NULL;
         break;
     case CONFIG_POLICY:
         *(enum feature_policy *)to = *(const enum feature_policy *)from;
@@ -524,20 +476,17 @@ static void copy_option(struct lager_config *target,
     }
 }
 
-static void print_one_option(const struct lager_config *cfg,
-                             const struct lager_config *defaults,
+static void print_one_option(const struct lager_config *cfg, const struct lager_config *defaults,
                              const struct config_option *option)
 {
     printf("%s = ", option->name);
     write_option_value(stdout, cfg, option);
-    printf("\n  %s\n  Choices: %s\n  Default: ", option->description,
-           option->choices);
+    printf("\n  %s\n  Choices: %s\n  Default: ", option->description, option->choices);
     write_option_value(stdout, defaults, option);
     printf("\n");
 }
 
-static void print_config_help(const struct config_state *state,
-                              const char *name)
+static void print_config_help(const struct config_state *state, const char *name)
 {
     struct lager_config defaults;
     const struct config_option *option;
@@ -576,21 +525,17 @@ static void unset_environment(struct config_state *state, const char *key)
     size_t i;
 
     for (i = 0; i < env->len; i++) {
-        if (!strncmp(env->items[i], key, key_len) &&
-            env->items[i][key_len] == '=') {
+        if (!strncmp(env->items[i], key, key_len) && env->items[i][key_len] == '=') {
             free(env->items[i]);
-            memmove(&env->items[i], &env->items[i + 1],
-                    (env->len - i) * sizeof(*env->items));
+            memmove(&env->items[i], &env->items[i + 1], (env->len - i) * sizeof(*env->items));
             env->len--;
             break;
         }
     }
-    state->present[find_option("environment", strlen("environment"), NULL) -
-                   options] = env->len > 0;
+    state->present[find_option("environment", strlen("environment"), NULL) - options] = env->len > 0;
 }
 
-static void set_environment(struct config_state *state, const char *key,
-                            const char *value)
+static void set_environment(struct config_state *state, const char *key, const char *value)
 {
     char *assignment;
 
@@ -600,8 +545,7 @@ static void set_environment(struct config_state *state, const char *key,
     assignment = xasprintf("%s=%s", key, value);
     env_set(&state->cfg.env, assignment);
     free(assignment);
-    state->present[find_option("environment", strlen("environment"), NULL) -
-                   options] = true;
+    state->present[find_option("environment", strlen("environment"), NULL) - options] = true;
 }
 
 static void print_config_usage(void)

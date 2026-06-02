@@ -40,8 +40,7 @@ static uint32_t read_le32(const void *data)
 {
     const unsigned char *bytes = data;
 
-    return (uint32_t)bytes[0] | (uint32_t)bytes[1] << 8 |
-           (uint32_t)bytes[2] << 16 | (uint32_t)bytes[3] << 24;
+    return (uint32_t)bytes[0] | (uint32_t)bytes[1] << 8 | (uint32_t)bytes[2] << 16 | (uint32_t)bytes[3] << 24;
 }
 
 static void write_le32(void *data, uint32_t value)
@@ -54,14 +53,12 @@ static void write_le32(void *data, uint32_t value)
     bytes[3] = value >> 24;
 }
 
-static const char *elf_string(const unsigned char *data, size_t size,
-                              const Elf64_Shdr *strings, uint32_t offset)
+static const char *elf_string(const unsigned char *data, size_t size, const Elf64_Shdr *strings, uint32_t offset)
 {
     const char *text;
     size_t available;
 
-    if (offset >= strings->sh_size ||
-        !range_ok(size, strings->sh_offset, strings->sh_size))
+    if (offset >= strings->sh_size || !range_ok(size, strings->sh_offset, strings->sh_size))
         die("invalid GPU module string table");
     text = (const char *)data + strings->sh_offset + offset;
     available = (size_t)strings->sh_size - offset;
@@ -77,16 +74,13 @@ static size_t strip_module_signature(unsigned char *data, size_t size)
     size_t trailer_size = sizeof(signature) + sizeof(magic) - 1;
     size_t signature_size;
 
-    if (size < trailer_size ||
-        memcmp(data + size - sizeof(magic) + 1, magic, sizeof(magic) - 1))
+    if (size < trailer_size || memcmp(data + size - sizeof(magic) + 1, magic, sizeof(magic) - 1))
         return size;
     memcpy(&signature, data + size - trailer_size, sizeof(signature));
     signature_size = ntohl(signature.sig_len);
-    if (signature_size >
-        SIZE_MAX - signature.signer_len - signature.key_id_len - trailer_size)
+    if (signature_size > SIZE_MAX - signature.signer_len - signature.key_id_len - trailer_size)
         die("invalid GPU module signature");
-    signature_size +=
-        signature.signer_len + signature.key_id_len + trailer_size;
+    signature_size += signature.signer_len + signature.key_id_len + trailer_size;
     if (signature_size > size)
         die("invalid GPU module signature");
     return size - signature_size;
@@ -106,22 +100,17 @@ static void patch_gpu_module(const char *path, long host_page_size)
     size_t i;
     int fd;
 
-    if (host_page_size <= 4096 || host_page_size & 4095 ||
-        host_page_size > (long)(0x7ffffU << 12))
-        die("unsupported host page size for GPU compatibility: %ld",
-            host_page_size);
+    if (host_page_size <= 4096 || host_page_size & 4095 || host_page_size > (long)(0x7ffffU << 12))
+        die("unsupported host page size for GPU compatibility: %ld", host_page_size);
     data = (unsigned char *)read_file(path, MAX_MODULE_SIZE, &size);
     patched_size = strip_module_signature(data, size);
     if (!range_ok(patched_size, 0, sizeof(*header)))
         die("truncated GPU module");
     header = (Elf64_Ehdr *)data;
-    if (memcmp(header->e_ident, ELFMAG, SELFMAG) ||
-        header->e_ident[EI_CLASS] != ELFCLASS64 ||
-        header->e_ident[EI_DATA] != ELFDATA2LSB || header->e_type != ET_REL ||
-        header->e_machine != EM_LOONGARCH ||
+    if (memcmp(header->e_ident, ELFMAG, SELFMAG) || header->e_ident[EI_CLASS] != ELFCLASS64 ||
+        header->e_ident[EI_DATA] != ELFDATA2LSB || header->e_type != ET_REL || header->e_machine != EM_LOONGARCH ||
         header->e_shentsize != sizeof(*sections) || !header->e_shnum ||
-        !range_ok(patched_size, header->e_shoff,
-                  (size_t)header->e_shnum * sizeof(*sections)))
+        !range_ok(patched_size, header->e_shoff, (size_t)header->e_shnum * sizeof(*sections)))
         die("unsupported GPU module ELF format");
     sections = (Elf64_Shdr *)(data + header->e_shoff);
     for (i = 0; i < header->e_shnum; i++) {
@@ -129,26 +118,21 @@ static void patch_gpu_module(const char *path, long host_page_size)
         Elf64_Shdr *strings;
         size_t j;
 
-        if (symbols->sh_type != SHT_SYMTAB ||
-            symbols->sh_entsize != sizeof(Elf64_Sym) ||
-            symbols->sh_link >= header->e_shnum ||
-            !range_ok(patched_size, symbols->sh_offset, symbols->sh_size))
+        if (symbols->sh_type != SHT_SYMTAB || symbols->sh_entsize != sizeof(Elf64_Sym) ||
+            symbols->sh_link >= header->e_shnum || !range_ok(patched_size, symbols->sh_offset, symbols->sh_size))
             continue;
         strings = &sections[symbols->sh_link];
         for (j = 0; j < symbols->sh_size / sizeof(Elf64_Sym); j++) {
             Elf64_Sym *symbol = (Elf64_Sym *)(data + symbols->sh_offset) + j;
 
-            if (!strcmp(
-                    elf_string(data, patched_size, strings, symbol->st_name),
-                    "virtio_gpu_vram_create")) {
+            if (!strcmp(elf_string(data, patched_size, strings, symbol->st_name), "virtio_gpu_vram_create")) {
                 vram_create = symbol;
                 symtab_index = i;
                 break;
             }
         }
     }
-    if (!vram_create || vram_create->st_shndx >= header->e_shnum ||
-        !vram_create->st_size)
+    if (!vram_create || vram_create->st_shndx >= header->e_shnum || !vram_create->st_size)
         die("cannot find GPU module VRAM allocator");
     for (i = 0; i < header->e_shnum; i++) {
         Elf64_Shdr *relocations = &sections[i];
@@ -156,36 +140,28 @@ static void patch_gpu_module(const char *path, long host_page_size)
         Elf64_Shdr *strings;
         size_t j;
 
-        if (relocations->sh_type != SHT_RELA ||
-            relocations->sh_info != vram_create->st_shndx ||
-            relocations->sh_link != symtab_index ||
-            relocations->sh_entsize != sizeof(Elf64_Rela) ||
-            !range_ok(patched_size, relocations->sh_offset,
-                      relocations->sh_size))
+        if (relocations->sh_type != SHT_RELA || relocations->sh_info != vram_create->st_shndx ||
+            relocations->sh_link != symtab_index || relocations->sh_entsize != sizeof(Elf64_Rela) ||
+            !range_ok(patched_size, relocations->sh_offset, relocations->sh_size))
             continue;
         symbols = &sections[symtab_index];
         strings = &sections[symbols->sh_link];
         for (j = 0; j < relocations->sh_size / sizeof(Elf64_Rela); j++) {
-            Elf64_Rela *relocation =
-                (Elf64_Rela *)(data + relocations->sh_offset) + j;
+            Elf64_Rela *relocation = (Elf64_Rela *)(data + relocations->sh_offset) + j;
             size_t symbol_index = ELF64_R_SYM(relocation->r_info);
             Elf64_Sym *symbol;
             Elf64_Shdr *code;
 
-            if (symbol_index >= symbols->sh_size / sizeof(Elf64_Sym) ||
-                relocation->r_offset < vram_create->st_value ||
-                relocation->r_offset >=
-                    vram_create->st_value + vram_create->st_size)
+            if (symbol_index >= symbols->sh_size / sizeof(Elf64_Sym) || relocation->r_offset < vram_create->st_value ||
+                relocation->r_offset >= vram_create->st_value + vram_create->st_size)
                 continue;
             symbol = (Elf64_Sym *)(data + symbols->sh_offset) + symbol_index;
-            if (strcmp(elf_string(data, patched_size, strings, symbol->st_name),
-                       "drm_mm_insert_node_in_range"))
+            if (strcmp(elf_string(data, patched_size, strings, symbol->st_name), "drm_mm_insert_node_in_range"))
                 continue;
             if (relocation->r_offset < 12)
                 die("invalid GPU module allocator call");
             code = &sections[vram_create->st_shndx];
-            patch_offset =
-                (size_t)code->sh_offset + (size_t)relocation->r_offset - 12;
+            patch_offset = (size_t)code->sh_offset + (size_t)relocation->r_offset - 12;
             if (!range_ok(patched_size, patch_offset, sizeof(uint32_t)) ||
                 read_le32(data + patch_offset) != 0x00150007U)
                 die("GPU module allocator layout changed");
@@ -260,8 +236,6 @@ char *gpu_compat_prepare(const char *runtime, const char *modules_dir)
 
 void feature_gpu_compat_host_prepare(struct host_ctx *ctx)
 {
-    if (ctx->opts->gpu_compat == FEATURE_ON ||
-        gpu_compat_needed(ctx->modules_dir))
-        ctx->compatible_gpu_module =
-            gpu_compat_prepare(ctx->runtime, ctx->modules_dir);
+    if (ctx->opts->gpu_compat == FEATURE_ON || gpu_compat_needed(ctx->modules_dir))
+        ctx->compatible_gpu_module = gpu_compat_prepare(ctx->runtime, ctx->modules_dir);
 }

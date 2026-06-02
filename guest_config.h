@@ -14,10 +14,8 @@ struct guest_config {
     void *storage;
 };
 
-struct bytebuf make_guest_config(const struct config_header *header,
-                                 const char *workdir, const char *box64,
-                                 const char *log_path, char *const guest_argv[],
-                                 const struct strvec *env);
+struct bytebuf make_guest_config(const struct config_header *header, const char *workdir, const char *box64,
+                                 const char *log_path, char *const guest_argv[], const struct strvec *env);
 struct guest_config read_guest_config(void);
 
 #endif

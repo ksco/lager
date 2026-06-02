@@ -49,8 +49,7 @@ struct dhcp_lease {
     uint32_t server;
 };
 
-static void dhcp_option(unsigned char **cursor, uint8_t type, const void *data,
-                        uint8_t len)
+static void dhcp_option(unsigned char **cursor, uint8_t type, const void *data, uint8_t len)
 {
     *(*cursor)++ = type;
     *(*cursor)++ = len;
@@ -58,16 +57,14 @@ static void dhcp_option(unsigned char **cursor, uint8_t type, const void *data,
     *cursor += len;
 }
 
-static bool dhcp_parse(const struct dhcp_packet *packet, ssize_t size,
-                       uint32_t xid, uint8_t wanted_type,
+static bool dhcp_parse(const struct dhcp_packet *packet, ssize_t size, uint32_t xid, uint8_t wanted_type,
                        struct dhcp_lease *lease)
 {
     const unsigned char *cursor = packet->options;
     const unsigned char *end = (const unsigned char *)packet + size;
     uint8_t message_type = 0;
 
-    if (size < (ssize_t)offsetof(struct dhcp_packet, options) ||
-        packet->op != 2 || packet->xid != xid ||
+    if (size < (ssize_t)offsetof(struct dhcp_packet, options) || packet->op != 2 || packet->xid != xid ||
         packet->magic != htonl(0x63825363))
         return false;
     lease->address = packet->yiaddr;
@@ -99,8 +96,7 @@ static bool dhcp_parse(const struct dhcp_packet *packet, ssize_t size,
     return message_type == wanted_type;
 }
 
-static ssize_t dhcp_send(int fd, const struct sockaddr_in *destination,
-                         const unsigned char *mac, uint32_t xid,
+static ssize_t dhcp_send(int fd, const struct sockaddr_in *destination, const unsigned char *mac, uint32_t xid,
                          uint8_t message_type, const struct dhcp_lease *lease)
 {
     struct dhcp_packet packet = {0};
@@ -122,15 +118,11 @@ static ssize_t dhcp_send(int fd, const struct sockaddr_in *destination,
     }
     dhcp_option(&cursor, 55, requested_options, sizeof(requested_options));
     *cursor++ = 255;
-    return sendto(fd, &packet,
-                  offsetof(struct dhcp_packet, options) +
-                      (size_t)(cursor - packet.options),
-                  0, (const struct sockaddr *)destination,
-                  sizeof(*destination));
+    return sendto(fd, &packet, offsetof(struct dhcp_packet, options) + (size_t)(cursor - packet.options), 0,
+                  (const struct sockaddr *)destination, sizeof(*destination));
 }
 
-static bool dhcp_receive(int fd, uint32_t xid, uint8_t wanted_type,
-                         struct dhcp_lease *lease)
+static bool dhcp_receive(int fd, uint32_t xid, uint8_t wanted_type, struct dhcp_lease *lease)
 {
     struct dhcp_packet packet;
     int attempt;
@@ -153,8 +145,7 @@ static bool dhcp_receive(int fd, uint32_t xid, uint8_t wanted_type,
     return false;
 }
 
-static int interface_ioctl(int fd, unsigned long request, const char *name,
-                           struct sockaddr_in *address)
+static int interface_ioctl(int fd, unsigned long request, const char *name, struct sockaddr_in *address)
 {
     struct ifreq ifr = {0};
 
@@ -180,13 +171,11 @@ static void write_guest_resolv_conf(uint32_t dns)
     }
     fprintf(file, "nameserver %s\n", text);
     fclose(file);
-    if (mount("/run/lager/resolv.conf", "/etc/resolv.conf", NULL, MS_BIND,
-              NULL) < 0)
+    if (mount("/run/lager/resolv.conf", "/etc/resolv.conf", NULL, MS_BIND, NULL) < 0)
         warnx("cannot install guest resolv.conf: %s", strerror(errno));
 }
 
-static void configure_guest_lease(int fd, const char *name,
-                                  const struct dhcp_lease *lease)
+static void configure_guest_lease(int fd, const char *name, const struct dhcp_lease *lease)
 {
     struct sockaddr_in address = {.sin_family = AF_INET};
     struct rtentry route = {0};
@@ -195,8 +184,7 @@ static void configure_guest_lease(int fd, const char *name,
     address.sin_addr.s_addr = lease->address;
     if (interface_ioctl(fd, SIOCSIFADDR, name, &address) < 0)
         warnx("cannot set %s address: %s", name, strerror(errno));
-    address.sin_addr.s_addr =
-        lease->netmask ? lease->netmask : htonl(0xffffff00);
+    address.sin_addr.s_addr = lease->netmask ? lease->netmask : htonl(0xffffff00);
     if (interface_ioctl(fd, SIOCSIFNETMASK, name, &address) < 0)
         warnx("cannot set %s netmask: %s", name, strerror(errno));
     if (lease->router) {
@@ -252,8 +240,7 @@ static char *guest_net_ifname(void)
     if (!stream)
         return NULL;
     while ((entry = readdir(stream))) {
-        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..") ||
-            !strcmp(entry->d_name, "lo"))
+        if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..") || !strcmp(entry->d_name, "lo"))
             continue;
         name = xstrdup(entry->d_name);
         break;
@@ -316,8 +303,7 @@ void setup_guest_net(void)
         return;
     }
     ifr.ifr_flags |= IFF_UP;
-    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0 ||
-        ioctl(fd, SIOCGIFHWADDR, &ifr) < 0 ||
+    if (ioctl(fd, SIOCSIFFLAGS, &ifr) < 0 || ioctl(fd, SIOCGIFHWADDR, &ifr) < 0 ||
         bind(fd, (struct sockaddr *)&source, sizeof(source)) < 0) {
         warnx("cannot prepare %s for DHCP: %s", name, strerror(errno));
         close(fd);
@@ -325,13 +311,11 @@ void setup_guest_net(void)
         return;
     }
     for (attempt = 0; attempt < 4; attempt++) {
-        if (dhcp_send(fd, &destination, (unsigned char *)ifr.ifr_hwaddr.sa_data,
-                      xid, 1, &lease) < 0)
+        if (dhcp_send(fd, &destination, (unsigned char *)ifr.ifr_hwaddr.sa_data, xid, 1, &lease) < 0)
             continue;
         if (!dhcp_receive(fd, xid, 2, &lease))
             continue;
-        if (dhcp_send(fd, &destination, (unsigned char *)ifr.ifr_hwaddr.sa_data,
-                      xid, 3, &lease) < 0)
+        if (dhcp_send(fd, &destination, (unsigned char *)ifr.ifr_hwaddr.sa_data, xid, 3, &lease) < 0)
             continue;
         if (dhcp_receive(fd, xid, 5, &lease)) {
             configure_guest_lease(fd, name, &lease);

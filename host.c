@@ -70,8 +70,7 @@ static unsigned long round_down_power_of_two(unsigned long value)
     return result;
 }
 
-static void parse_resolution(const char *resolution, uint32_t *width,
-                             uint32_t *height)
+static void parse_resolution(const char *resolution, uint32_t *width, uint32_t *height)
 {
     char *end;
     unsigned long w, h;
@@ -83,12 +82,10 @@ static void parse_resolution(const char *resolution, uint32_t *width,
     }
     w = strtoul(resolution, &end, 10);
     if (end == resolution || *end != 'x' || !end[1])
-        die("invalid resolution format: %s (expected WIDTHxHEIGHT)",
-            resolution);
+        die("invalid resolution format: %s (expected WIDTHxHEIGHT)", resolution);
     h = strtoul(end + 1, &end, 10);
     if (*end || h == 0 || w == 0 || w > 16384 || h > 16384)
-        die("invalid resolution format: %s (expected WIDTHxHEIGHT)",
-            resolution);
+        die("invalid resolution format: %s (expected WIDTHxHEIGHT)", resolution);
     *width = (uint32_t)w;
     *height = (uint32_t)h;
 }
@@ -128,8 +125,7 @@ static char *default_kernel(void)
             return candidate;
         free(candidate);
     }
-    if (glob("/boot/vmlinuz-*-4k", 0, NULL, &matches) == 0 &&
-        matches.gl_pathc > 0) {
+    if (glob("/boot/vmlinuz-*-4k", 0, NULL, &matches) == 0 && matches.gl_pathc > 0) {
         candidate = xstrdup(matches.gl_pathv[matches.gl_pathc - 1]);
         globfree(&matches);
         return candidate;
@@ -234,8 +230,7 @@ int host_main(int argc, char **argv)
     kernel = opts.kernel ? xstrdup(opts.kernel) : default_kernel();
     if (!kernel || !path_exists(kernel))
         die("cannot find a 4 KiB system kernel; set \"kernel\" in config.json");
-    modules_dir = opts.modules_dir ? xstrdup(opts.modules_dir)
-                                   : infer_modules_dir(kernel);
+    modules_dir = opts.modules_dir ? xstrdup(opts.modules_dir) : infer_modules_dir(kernel);
     if (!path_exists(modules_dir))
         die("matching modules directory does not exist: %s", modules_dir);
     launcher_resolve_programs(&programs);
@@ -261,8 +256,7 @@ int host_main(int argc, char **argv)
     env_set(&env, "DISPLAY=");
     env_set(&env, "DBUS_SESSION_BUS_ADDRESS=");
     env_set(&env, "PULSE_SERVER=");
-    assignment =
-        xasprintf("XDG_RUNTIME_DIR=/run/user/%lu", (unsigned long)getuid());
+    assignment = xasprintf("XDG_RUNTIME_DIR=/run/user/%lu", (unsigned long)getuid());
     env_set(&env, assignment);
     free(assignment);
     features_host_add_env(&feature_ctx);
@@ -276,21 +270,17 @@ int host_main(int argc, char **argv)
     header.gid = (uint32_t)getgid();
     header.argc = (uint32_t)(argc - 1);
     header.envc = (uint32_t)env.len;
-    parse_resolution(opts.resolution, &header.resolution_width,
-                     &header.resolution_height);
+    parse_resolution(opts.resolution, &header.resolution_width, &header.resolution_height);
     if (clock_gettime(CLOCK_REALTIME, &realtime) < 0)
         die("clock_gettime: %s", strerror(errno));
     header.realtime_sec = realtime.tv_sec;
     header.realtime_nsec = (uint32_t)realtime.tv_nsec;
-    config =
-        make_guest_config(&header, workdir, feature_ctx.box64, log_path,
-                          &argv[1], &env);
+    config = make_guest_config(&header, workdir, feature_ctx.box64, log_path, &argv[1], &env);
     make_initramfs(initramfs, modules_dir, &config, compatible_gpu_module);
 
-    launcher_build_virtiofsd_command(&virtiofsd, programs.virtiofsd,
-                                     rootfs_socket);
-    launcher_build_qemu_command(&feature_ctx, programs.qemu, kernel, initramfs,
-                                rootfs_socket, vcpus, mem_mib, qemu_title);
+    launcher_build_virtiofsd_command(&virtiofsd, programs.virtiofsd, rootfs_socket);
+    launcher_build_qemu_command(&feature_ctx, programs.qemu, kernel, initramfs, rootfs_socket, vcpus, mem_mib,
+                                qemu_title);
 
     raise_nofile_limit();
     prepare_log(log_path);
@@ -308,8 +298,7 @@ int host_main(int argc, char **argv)
         die("open %s: %s", log_path, strerror(errno));
     }
     host_qemu_pid = spawn_stderr_tee(qemu.items, &qemu_stderr_fd);
-    status = wait_for_stderr_tee(host_qemu_pid, qemu_stderr_fd, qemu_log_fd,
-                                 "qemu");
+    status = wait_for_stderr_tee(host_qemu_pid, qemu_stderr_fd, qemu_log_fd, "qemu");
     close(qemu_log_fd);
     host_qemu_pid = -1;
     cleanup_runtime(runtime);

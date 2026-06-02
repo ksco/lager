@@ -20,8 +20,7 @@ void feature_openbox_host_resolve(struct host_ctx *ctx)
 {
     if (!ctx->x11)
         return;
-    feature_require_executable("/usr/bin/openbox", "openbox", "x11 support",
-                               "openbox");
+    feature_require_executable("/usr/bin/openbox", "openbox", "x11 support", "openbox");
 }
 
 static void write_openbox_config(void)
@@ -42,8 +41,7 @@ static void write_openbox_config(void)
     if (!start || !end)
         die("cannot find Openbox root menu bindings");
     end += sizeof(context_end) - 1;
-    fd = open("/run/lager/openbox.xml",
-              O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
+    fd = open("/run/lager/openbox.xml", O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0644);
     if (fd < 0)
         die("create /run/lager/openbox.xml: %s", strerror(errno));
     write_all(fd, config, (size_t)(start - config));
@@ -61,13 +59,11 @@ static void setup_guest_openbox(const struct guest_config *cfg, int log_fd)
     unlink(ready_path);
     write_openbox_config();
     if (guest_service_fork(GUEST_SERVICE_OPENBOX) == 0) {
-        if (setgid((gid_t)cfg->header.gid) < 0 ||
-            setuid((uid_t)cfg->header.uid) < 0)
+        if (setgid((gid_t)cfg->header.gid) < 0 || setuid((uid_t)cfg->header.uid) < 0)
             die("drop openbox privileges: %s", strerror(errno));
         environ = cfg->env;
         silence_output_fd(log_fd);
-        execl("/usr/bin/openbox", "openbox", "--sm-disable", "--config-file",
-              "/run/lager/openbox.xml", "--startup",
+        execl("/usr/bin/openbox", "openbox", "--sm-disable", "--config-file", "/run/lager/openbox.xml", "--startup",
               "/usr/bin/touch /tmp/.lager-openbox-ready", (char *)NULL);
         die("exec openbox: %s", strerror(errno));
     }

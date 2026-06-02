@@ -168,15 +168,12 @@ int run_guest_command(const struct guest_config *cfg)
             die("open guest command pty: %s", strerror(errno));
         if (ioctl(slave_fd, TIOCSCTTY, 0) < 0)
             die("set guest command controlling pty: %s", strerror(errno));
-        if (dup2(slave_fd, STDIN_FILENO) < 0 ||
-            dup2(slave_fd, STDOUT_FILENO) < 0 ||
-            dup2(slave_fd, STDERR_FILENO) < 0)
+        if (dup2(slave_fd, STDIN_FILENO) < 0 || dup2(slave_fd, STDOUT_FILENO) < 0 || dup2(slave_fd, STDERR_FILENO) < 0)
             die("wire guest command pty: %s", strerror(errno));
         if (slave_fd > STDERR_FILENO)
             close(slave_fd);
         close(master_fd);
-        if (setgid((gid_t)cfg->header.gid) < 0 ||
-            setuid((uid_t)cfg->header.uid) < 0)
+        if (setgid((gid_t)cfg->header.gid) < 0 || setuid((uid_t)cfg->header.uid) < 0)
             die("drop guest privileges: %s", strerror(errno));
         if (chdir(cfg->workdir) < 0) {
             warnx("cannot enter %s, using /", cfg->workdir);

@@ -127,8 +127,7 @@ char *find_in_path(const char *name)
     if (strchr(name, '/'))
         return executable(name) ? xstrdup(name) : NULL;
     path_copy = xstrdup(getenv("PATH") ? getenv("PATH") : "");
-    for (part = strtok_r(path_copy, ":", &saveptr); part;
-         part = strtok_r(NULL, ":", &saveptr)) {
+    for (part = strtok_r(path_copy, ":", &saveptr); part; part = strtok_r(NULL, ":", &saveptr)) {
         char *candidate = xasprintf("%s/%s", part, name);
 
         if (executable(candidate)) {
@@ -141,8 +140,7 @@ char *find_in_path(const char *name)
     return NULL;
 }
 
-char *find_program(const char *requested, const char *name,
-                   const char *fallback)
+char *find_program(const char *requested, const char *name, const char *fallback)
 {
     char *result;
 
@@ -192,15 +190,12 @@ void env_unset(struct strvec *env, const char *name)
     size_t i = 0;
 
     if (!*name || strchr(name, '='))
-        die("environment name must be non-empty and cannot contain '=': %s",
-            name);
+        die("environment name must be non-empty and cannot contain '=': %s", name);
     len = strlen(name);
     while (i < env->len) {
-        if (strncmp(env->items[i], name, len) == 0 &&
-            env->items[i][len] == '=') {
+        if (strncmp(env->items[i], name, len) == 0 && env->items[i][len] == '=') {
             free(env->items[i]);
-            memmove(&env->items[i], &env->items[i + 1],
-                    (env->len - i) * sizeof(*env->items));
+            memmove(&env->items[i], &env->items[i + 1], (env->len - i) * sizeof(*env->items));
             env->len--;
             continue;
         }

@@ -26,13 +26,11 @@ static void setup_guest_polkit(int log_fd)
         if (setgroups(0, NULL) < 0 || setgid(gid) < 0 || setuid(uid) < 0)
             die("drop polkitd privileges: %s", strerror(errno));
         silence_output_fd(log_fd);
-        execl("/usr/lib/polkit-1/polkitd", "polkitd", "--no-debug",
-              (char *)NULL);
+        execl("/usr/lib/polkit-1/polkitd", "polkitd", "--no-debug", (char *)NULL);
         die("exec polkitd: %s", strerror(errno));
     }
-    if (!feature_wait_for_guest_bus_name("--system",
-                                         "org.freedesktop.PolicyKit1",
-                                         GUEST_SERVICE_POLKIT, "polkitd", 0, 0))
+    if (!feature_wait_for_guest_bus_name("--system", "org.freedesktop.PolicyKit1", GUEST_SERVICE_POLKIT, "polkitd", 0,
+                                         0))
         guest_service_forget(GUEST_SERVICE_POLKIT);
 }
 
@@ -45,8 +43,7 @@ static void setup_guest_upower(int log_fd)
         execl("/usr/libexec/upowerd", "upowerd", (char *)NULL);
         die("exec upowerd: %s", strerror(errno));
     }
-    if (!feature_wait_for_guest_bus_name("--system", "org.freedesktop.UPower",
-                                         GUEST_SERVICE_UPOWER, "upowerd", 0, 0))
+    if (!feature_wait_for_guest_bus_name("--system", "org.freedesktop.UPower", GUEST_SERVICE_UPOWER, "upowerd", 0, 0))
         guest_service_forget(GUEST_SERVICE_UPOWER);
 }
 

@@ -18,8 +18,7 @@ void feature_box64_host_resolve(struct host_ctx *ctx)
         warnx("box64 was not found; automatic binfmt registration is disabled");
 }
 
-static void buf_append_hex_escaped(struct bytebuf *buf,
-                                   const unsigned char *data, size_t size)
+static void buf_append_hex_escaped(struct bytebuf *buf, const unsigned char *data, size_t size)
 {
     static const char hex[] = "0123456789abcdef";
     size_t i;
@@ -31,8 +30,7 @@ static void buf_append_hex_escaped(struct bytebuf *buf,
     }
 }
 
-static void register_binfmt(const char *name, const unsigned char *magic,
-                            size_t magic_len, const unsigned char *mask,
+static void register_binfmt(const char *name, const unsigned char *magic, size_t magic_len, const unsigned char *mask,
                             size_t mask_len, const char *interpreter)
 {
     struct bytebuf rule = {0};
@@ -85,14 +83,10 @@ static void setup_box64(const char *box64)
     if (!box64[0])
         return;
     mkdir_ok("/proc/sys/fs/binfmt_misc", 0755);
-    if (mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0,
-              NULL) < 0 &&
-        errno != EBUSY)
+    if (mount("binfmt_misc", "/proc/sys/fs/binfmt_misc", "binfmt_misc", 0, NULL) < 0 && errno != EBUSY)
         die("mount binfmt_misc: %s", strerror(errno));
-    register_binfmt("BOX64", magic64, sizeof(magic64), mask64, sizeof(mask64),
-                    box64);
-    register_binfmt("BOX32", magic32, sizeof(magic32), mask32, sizeof(mask32),
-                    box64);
+    register_binfmt("BOX64", magic64, sizeof(magic64), mask64, sizeof(mask64), box64);
+    register_binfmt("BOX32", magic32, sizeof(magic32), mask32, sizeof(mask32), box64);
 }
 
 void feature_box64_guest_setup(struct guest_ctx *ctx)

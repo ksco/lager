@@ -13,12 +13,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-void feature_require_executable(const char *path, const char *program,
-                                const char *feature, const char *package)
+void feature_require_executable(const char *path, const char *program, const char *feature, const char *package)
 {
     if (!executable(path))
-        die("%s is required for %s; install the %s package", program, feature,
-            package);
+        die("%s is required for %s; install the %s package", program, feature, package);
 }
 
 int feature_spawn_wait(char *const argv[], bool warn_failure)
@@ -53,8 +51,7 @@ int feature_spawn_wait_silent(char *const argv[], uid_t uid, gid_t gid)
     if (pid < 0)
         die("fork: %s", strerror(errno));
     if (pid == 0) {
-        if ((uid != 0 || gid != 0) &&
-            (setgroups(0, NULL) < 0 || setgid(gid) < 0 || setuid(uid) < 0))
+        if ((uid != 0 || gid != 0) && (setgroups(0, NULL) < 0 || setgid(gid) < 0 || setuid(uid) < 0))
             _exit(126);
         silence_output("/dev/null");
         execvp(argv[0], argv);
@@ -67,10 +64,8 @@ int feature_spawn_wait_silent(char *const argv[], uid_t uid, gid_t gid)
     return WIFEXITED(status) && WEXITSTATUS(status) == 0 ? 0 : -1;
 }
 
-bool feature_wait_for_guest_bus_name(const char *bus, const char *name,
-                                     enum guest_service_id service_id,
-                                     const char *process_name, uid_t uid,
-                                     gid_t gid)
+bool feature_wait_for_guest_bus_name(const char *bus, const char *name, enum guest_service_id service_id,
+                                     const char *process_name, uid_t uid, gid_t gid)
 {
     char *check_owner[] = {
         "/usr/bin/dbus-send",
@@ -120,8 +115,7 @@ bool feature_guest_user_ids(const char *wanted, uid_t *uid, gid_t *gid)
         char *end;
         unsigned long value;
 
-        if (!name || !password || !uid_text || !gid_text ||
-            strcmp(name, wanted))
+        if (!name || !password || !uid_text || !gid_text || strcmp(name, wanted))
             continue;
         errno = 0;
         value = strtoul(uid_text, &end, 10);
