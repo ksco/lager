@@ -44,6 +44,7 @@ struct lager_config {
     char *kernel;
     char *modules_dir;
     char *resolution;
+    char *input;
     enum feature_policy gpu_compat;
 };
 

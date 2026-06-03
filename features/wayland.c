@@ -41,11 +41,20 @@ void feature_wayland_host_add_env(struct host_ctx *ctx)
 
 void feature_wayland_host_add_qemu_options(struct host_ctx *ctx)
 {
-    (void)ctx;
+    const char *input = ctx->opts->input;
+    const char *device;
+
+    if (!strcmp(input, "mouse")) {
+        device = "virtio-mouse-pci";
+    } else if (!strcmp(input, "tablet")) {
+        device = "virtio-tablet-pci";
+    } else {
+        die("invalid config value for input: %s (must be tablet or mouse)", input);
+    }
     vec_push_copy(ctx->qemu, "-device");
     vec_push_copy(ctx->qemu, "virtio-keyboard-pci");
     vec_push_copy(ctx->qemu, "-device");
-    vec_push_copy(ctx->qemu, "virtio-mouse-pci");
+    vec_push_copy(ctx->qemu, device);
 }
 
 static void setup_guest_udev(void)
