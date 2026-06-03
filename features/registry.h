@@ -8,6 +8,12 @@
 #include "../guest/config.h"
 #include "../misc/utils.h"
 
+enum display_type {
+    DISPLAY_NONE,
+    DISPLAY_X11,
+    DISPLAY_WAYLAND,
+};
+
 struct host_ctx {
     struct lager_config *opts;
     struct config_header *header;
@@ -18,7 +24,7 @@ struct host_ctx {
     const char *box64;
     unsigned long gpu_hostmem_mib;
     bool qemu_has_drm_native_context;
-    bool x11;
+    enum display_type display;
     char *compatible_gpu_module;
     char *audio_backend;
 };
@@ -36,4 +42,3 @@ void features_guest_setup(struct guest_ctx *ctx);
 void features_guest_stop(struct guest_ctx *ctx);
 
 #endif
-

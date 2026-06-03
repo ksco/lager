@@ -122,7 +122,7 @@ static void load_early_module(const char *name)
     die("early module is missing: %s", name);
 }
 
-static void guest_modprobe(bool gpu, bool net, bool audio, bool x11)
+static void guest_modprobe(bool gpu, bool net, bool audio, bool display)
 {
     struct strvec args = {0};
 
@@ -133,7 +133,7 @@ static void guest_modprobe(bool gpu, bool net, bool audio, bool x11)
         vec_push_copy(&args, "virtio_gpu");
     if (net)
         vec_push_copy(&args, "virtio_net");
-    if (x11)
+    if (display)
         vec_push_copy(&args, "virtio_input");
     if (audio)
         vec_push_copy(&args, "virtio_snd");
@@ -190,7 +190,7 @@ int guest_init(void)
 
     sethostname("lager", 5);
     guest_modprobe(cfg.header.flags & CFG_GPU, cfg.header.flags & CFG_NET, cfg.header.flags & CFG_AUDIO,
-                   cfg.header.flags & CFG_X11);
+                   cfg.header.flags & (CFG_X11 | CFG_WAYLAND));
     reopen_guest_console();
     feature_ctx.cfg = &cfg;
     feature_ctx.log_fd = log_fd;

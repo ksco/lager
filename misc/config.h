@@ -6,7 +6,7 @@
 #include "utils.h"
 
 #define CFG_MAGIC "LAGER01"
-#define CFG_VERSION 7
+#define CFG_VERSION 8
 #define ROOT_TAG "lager-root"
 #define MAX_CONFIG_SIZE (1024 * 1024)
 
@@ -19,6 +19,7 @@ enum {
     CFG_DBUS = 1U << 6,
     CFG_NOTIFICATIONS = 1U << 8,
     CFG_OPENBOX = 1U << 9,
+    CFG_WAYLAND = 1U << 10,
 };
 
 struct config_header {
@@ -45,6 +46,7 @@ struct lager_config {
     char *kernel;
     char *modules_dir;
     char *resolution;
+    char *display;
     enum feature_policy gpu_compat;
 };
 

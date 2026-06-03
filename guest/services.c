@@ -22,6 +22,8 @@ static struct guest_service services[] = {
     [GUEST_SERVICE_SYSTEM_BUS] = {"system dbus-daemon", -1},
     [GUEST_SERVICE_SESSION_BUS] = {"session dbus-daemon", -1},
     [GUEST_SERVICE_AUDIO] = {"pulseaudio", -1},
+    [GUEST_SERVICE_WESTON] = {"weston", -1},
+    [GUEST_SERVICE_SEATD] = {"seatd", -1},
 };
 
 static struct guest_service *service(enum guest_service_id id)

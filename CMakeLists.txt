@@ -24,6 +24,7 @@ add_executable(lager
     features/notifications.c
     features/openbox.c
     features/registry.c
+    features/wayland.c
     features/x11.c
     misc/utils.c
 )

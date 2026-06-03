@@ -11,6 +11,7 @@
 #include "network.h"
 #include "notifications.h"
 #include "openbox.h"
+#include "wayland.h"
 #include "x11.h"
 
 enum feature_condition {
@@ -18,6 +19,8 @@ enum feature_condition {
     FEATURE_BOX64,
     FEATURE_GPU_COMPAT,
     FEATURE_X11,
+    FEATURE_WAYLAND,
+    FEATURE_DISPLAY,
 };
 
 struct feature {
@@ -43,7 +46,11 @@ static bool feature_applies(const struct feature *feature, const struct host_ctx
     case FEATURE_GPU_COMPAT:
         return ctx->opts->gpu_compat != FEATURE_OFF;
     case FEATURE_X11:
-        return ctx->x11;
+        return ctx->display == DISPLAY_X11;
+    case FEATURE_WAYLAND:
+        return ctx->display == DISPLAY_WAYLAND;
+    case FEATURE_DISPLAY:
+        return ctx->display == DISPLAY_X11 || ctx->display == DISPLAY_WAYLAND;
     }
     die("invalid feature condition");
 }
@@ -107,10 +114,21 @@ static const struct feature features[] = {
         .guest_stop = feature_x11_guest_stop,
     },
     {
+        .name = "wayland",
+        .flag = CFG_WAYLAND,
+        .requires = CFG_GPU,
+        .condition = FEATURE_WAYLAND,
+        .host_resolve = feature_wayland_host_resolve,
+        .host_add_env = feature_wayland_host_add_env,
+        .host_add_qemu_options = feature_wayland_host_add_qemu_options,
+        .guest_setup = feature_wayland_guest_setup,
+        .guest_stop = feature_wayland_guest_stop,
+    },
+    {
         .name = "notifications",
         .flag = CFG_NOTIFICATIONS,
-        .requires = CFG_DBUS | CFG_X11,
-        .condition = FEATURE_X11,
+        .requires = CFG_DBUS,
+        .condition = FEATURE_DISPLAY,
         .host_resolve = feature_notifications_host_resolve,
         .guest_setup = feature_notifications_guest_setup,
         .guest_stop = feature_notifications_guest_stop,

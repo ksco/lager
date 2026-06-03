@@ -40,6 +40,7 @@ static const struct config_option options[] = {
            "Guest kernel module tree. null infers it from the kernel name.", "null or an absolute path"),
     OPTION("resolution", CONFIG_STRING, resolution, "Guest Xorg mode and QEMU GTK window size.",
            "WIDTHxHEIGHT or an empty string"),
+    OPTION("display", CONFIG_STRING, display, "Guest display server.", "auto, x11, or wayland"),
     OPTION("gpu_compat", CONFIG_POLICY, gpu_compat, "Patch the guest GPU module when mixed page sizes require it.",
            "auto, on, or off"),
 
@@ -57,6 +58,7 @@ void free_lager_config(struct lager_config *cfg)
     free(cfg->kernel);
     free(cfg->modules_dir);
     free(cfg->resolution);
+    free(cfg->display);
     memset(cfg, 0, sizeof(*cfg));
 }
 
@@ -65,6 +67,7 @@ static void init_lager_config(struct lager_config *cfg)
     memset(cfg, 0, sizeof(*cfg));
     cfg->gpu_compat = FEATURE_AUTO;
     cfg->resolution = xstrdup("1024x768");
+    cfg->display = xstrdup("auto");
 }
 
 static const struct config_option *find_option(const char *name, size_t len, size_t *index_out)

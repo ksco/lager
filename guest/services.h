@@ -11,6 +11,8 @@ enum guest_service_id {
     GUEST_SERVICE_SYSTEM_BUS,
     GUEST_SERVICE_SESSION_BUS,
     GUEST_SERVICE_AUDIO,
+    GUEST_SERVICE_WESTON,
+    GUEST_SERVICE_SEATD,
 };
 
 pid_t guest_service_fork(enum guest_service_id id);

@@ -15,7 +15,7 @@ extern char **environ;
 
 void feature_notifications_host_resolve(struct host_ctx *ctx)
 {
-    if (!ctx->x11)
+    if (ctx->display == DISPLAY_NONE)
         return;
     feature_require_executable("/usr/bin/dunst", "dunst", "notifications", "dunst");
 }
