@@ -13,12 +13,10 @@
 enum {
     CFG_GPU = 1U << 0,
     CFG_NET = 1U << 1,
-    CFG_X11 = 1U << 2,
     CFG_BINFMT = 1U << 4,
     CFG_AUDIO = 1U << 5,
     CFG_DBUS = 1U << 6,
     CFG_NOTIFICATIONS = 1U << 8,
-    CFG_OPENBOX = 1U << 9,
     CFG_WAYLAND = 1U << 10,
 };
 
@@ -46,7 +44,6 @@ struct lager_config {
     char *kernel;
     char *modules_dir;
     char *resolution;
-    char *display;
     enum feature_policy gpu_compat;
 };
 

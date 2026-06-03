@@ -29,8 +29,9 @@ Required:
 - Box64 in `PATH`
 - dbus
 - PulseAudio
-- Xorg
-- Openbox
+- Weston
+- seatd
+- Xwayland
 - dunst
 - zstd
 
@@ -41,7 +42,7 @@ The invoking user must be able to access `/dev/kvm`.
 Install runtime dependencies:
 
 ```bash
-sudo oma install qemu passt virtiofsd dbus pulseaudio xorg-server openbox dunst zstd
+sudo oma install qemu passt virtiofsd dbus pulseaudio weston seatd xwayland dunst zstd
 ```
 
 Add your user to the `kvm` group:

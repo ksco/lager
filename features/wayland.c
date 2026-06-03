@@ -18,8 +18,7 @@
 
 void feature_wayland_host_resolve(struct host_ctx *ctx)
 {
-    if (ctx->display != DISPLAY_WAYLAND)
-        return;
+    (void)ctx;
     feature_require_executable("/usr/bin/weston", "weston", "wayland support", "weston");
     feature_require_executable("/usr/bin/seatd", "seatd", "wayland support", "seatd");
     feature_require_executable("/usr/bin/Xwayland", "Xwayland", "wayland support", "xwayland");

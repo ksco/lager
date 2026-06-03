@@ -198,7 +198,7 @@ int host_main(int argc, char **argv)
     char *assignment;
     char cwd[PATH_MAX];
     const char *workdir;
-    enum display_type display = DISPLAY_X11;
+    enum display_type display = DISPLAY_WAYLAND;
     int config_status;
 
     config_status = handle_lager_config_cli(argc, argv);
@@ -212,19 +212,6 @@ int host_main(int argc, char **argv)
         display = DISPLAY_NONE;
         argc -= 2;
         argv += 2;
-    } else if (!strcmp(opts.display, "auto")) {
-        if (getenv("WAYLAND_DISPLAY"))
-            display = DISPLAY_WAYLAND;
-        else if (getenv("DISPLAY"))
-            display = DISPLAY_X11;
-        else
-            display = DISPLAY_NONE;
-    } else if (!strcmp(opts.display, "wayland")) {
-        display = DISPLAY_WAYLAND;
-    } else if (!strcmp(opts.display, "x11")) {
-        display = DISPLAY_X11;
-    } else {
-        die("invalid display value: %s (expected auto, x11, or wayland)", opts.display);
     }
     if (argc < 2)
         die("no command specified; usage: lager COMMAND [ARGS...]");

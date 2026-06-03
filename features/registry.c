@@ -10,17 +10,13 @@
 #include "gpu_compat.h"
 #include "network.h"
 #include "notifications.h"
-#include "openbox.h"
 #include "wayland.h"
-#include "x11.h"
 
 enum feature_condition {
     FEATURE_ALWAYS,
     FEATURE_BOX64,
     FEATURE_GPU_COMPAT,
-    FEATURE_X11,
     FEATURE_WAYLAND,
-    FEATURE_DISPLAY,
 };
 
 struct feature {
@@ -45,12 +41,8 @@ static bool feature_applies(const struct feature *feature, const struct host_ctx
         return ctx->box64;
     case FEATURE_GPU_COMPAT:
         return ctx->opts->gpu_compat != FEATURE_OFF;
-    case FEATURE_X11:
-        return ctx->display == DISPLAY_X11;
     case FEATURE_WAYLAND:
         return ctx->display == DISPLAY_WAYLAND;
-    case FEATURE_DISPLAY:
-        return ctx->display == DISPLAY_X11 || ctx->display == DISPLAY_WAYLAND;
     }
     die("invalid feature condition");
 }
@@ -103,17 +95,6 @@ static const struct feature features[] = {
         .guest_setup = feature_box64_guest_setup,
     },
     {
-        .name = "x11",
-        .flag = CFG_X11,
-        .requires = CFG_GPU,
-        .condition = FEATURE_X11,
-        .host_resolve = feature_x11_host_resolve,
-        .host_add_env = feature_x11_host_add_env,
-        .host_add_qemu_options = feature_x11_host_add_qemu_options,
-        .guest_setup = feature_x11_guest_setup,
-        .guest_stop = feature_x11_guest_stop,
-    },
-    {
         .name = "wayland",
         .flag = CFG_WAYLAND,
         .requires = CFG_GPU,
@@ -128,19 +109,10 @@ static const struct feature features[] = {
         .name = "notifications",
         .flag = CFG_NOTIFICATIONS,
         .requires = CFG_DBUS,
-        .condition = FEATURE_DISPLAY,
+        .condition = FEATURE_WAYLAND,
         .host_resolve = feature_notifications_host_resolve,
         .guest_setup = feature_notifications_guest_setup,
         .guest_stop = feature_notifications_guest_stop,
-    },
-    {
-        .name = "openbox",
-        .flag = CFG_OPENBOX,
-        .requires = CFG_X11,
-        .condition = FEATURE_X11,
-        .host_resolve = feature_openbox_host_resolve,
-        .guest_setup = feature_openbox_guest_setup,
-        .guest_stop = feature_openbox_guest_stop,
     },
 };
 

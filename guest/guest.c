@@ -190,7 +190,7 @@ int guest_init(void)
 
     sethostname("lager", 5);
     guest_modprobe(cfg.header.flags & CFG_GPU, cfg.header.flags & CFG_NET, cfg.header.flags & CFG_AUDIO,
-                   cfg.header.flags & (CFG_X11 | CFG_WAYLAND));
+                   cfg.header.flags & CFG_WAYLAND);
     reopen_guest_console();
     feature_ctx.cfg = &cfg;
     feature_ctx.log_fd = log_fd;

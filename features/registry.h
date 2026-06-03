@@ -10,7 +10,6 @@
 
 enum display_type {
     DISPLAY_NONE,
-    DISPLAY_X11,
     DISPLAY_WAYLAND,
 };
 

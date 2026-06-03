@@ -238,7 +238,7 @@ void launcher_build_qemu_command(struct host_ctx *features, const char *program,
     vec_push_copy(features->qemu, "-append");
     kernel_args = xstrdup("console=ttyS0,115200 quiet loglevel=0 "
                           "panic=-1 reboot=t init=/init");
-    if ((header->flags & (CFG_X11 | CFG_WAYLAND)) && header->resolution_width > 0) {
+    if ((header->flags & CFG_WAYLAND) && header->resolution_width > 0) {
         char *with_resolution =
             xasprintf("%s video=Virtual-1:%ux%u@60", kernel_args, header->resolution_width, header->resolution_height);
 
