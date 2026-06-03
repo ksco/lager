@@ -199,7 +199,6 @@ int host_main(int argc, char **argv)
     char cwd[PATH_MAX];
     const char *workdir;
     bool x11 = true;
-    size_t i;
     int config_status;
 
     config_status = handle_lager_config_cli(argc, argv);
@@ -251,8 +250,6 @@ int host_main(int argc, char **argv)
 
     env = copy_host_env();
     feature_ctx.env = &env;
-    for (i = 0; i < opts.env.len; i++)
-        env_set(&env, opts.env.items[i]);
     env_set(&env, "DISPLAY=");
     env_set(&env, "DBUS_SESSION_BUS_ADDRESS=");
     env_set(&env, "PULSE_SERVER=");

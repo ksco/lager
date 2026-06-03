@@ -6,7 +6,7 @@
 #include "utils.h"
 
 #define CFG_MAGIC "LAGER01"
-#define CFG_VERSION 6
+#define CFG_VERSION 7
 #define ROOT_TAG "lager-root"
 #define MAX_CONFIG_SIZE (1024 * 1024)
 
@@ -46,7 +46,6 @@ struct lager_config {
     char *modules_dir;
     char *resolution;
     enum feature_policy gpu_compat;
-    struct strvec env;
 };
 
 void load_lager_config(struct lager_config *cfg);

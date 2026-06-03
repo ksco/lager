@@ -20,7 +20,6 @@ enum config_type {
     CONFIG_NULLABLE_STRING,
     CONFIG_STRING,
     CONFIG_POLICY,
-    CONFIG_ENVIRONMENT,
 };
 
 struct config_option {
@@ -43,8 +42,7 @@ static const struct config_option options[] = {
            "WIDTHxHEIGHT or an empty string"),
     OPTION("gpu_compat", CONFIG_POLICY, gpu_compat, "Patch the guest GPU module when mixed page sizes require it.",
            "auto, on, or off"),
-    OPTION("environment", CONFIG_ENVIRONMENT, env, "Environment values to override inside the guest.",
-           "JSON object; set one entry with environment.NAME VALUE"),
+
 };
 
 #define OPTION_COUNT (sizeof(options) / sizeof(options[0]))
@@ -54,22 +52,11 @@ struct config_state {
     bool present[OPTION_COUNT];
 };
 
-static void vec_clear(struct strvec *vec)
-{
-    size_t i;
-
-    for (i = 0; i < vec->len; i++)
-        free(vec->items[i]);
-    free(vec->items);
-    memset(vec, 0, sizeof(*vec));
-}
-
 void free_lager_config(struct lager_config *cfg)
 {
     free(cfg->kernel);
     free(cfg->modules_dir);
     free(cfg->resolution);
-    vec_clear(&cfg->env);
     memset(cfg, 0, sizeof(*cfg));
 }
 
@@ -143,31 +130,6 @@ static const char *policy_name(enum feature_policy policy)
     die("invalid feature policy");
 }
 
-static void parse_environment(struct strvec *env, struct json_value_s *value)
-{
-    struct json_object_s *object = json_value_as_object(value);
-    struct json_object_element_s *element;
-
-    if (!object)
-        die("config key \"environment\" must be an object");
-    vec_clear(env);
-    for (element = object->start; element; element = element->next) {
-        char *name;
-        char *value_string;
-        char *assignment;
-
-        if (!element->name->string_size || memchr(element->name->string, '=', element->name->string_size))
-            die("config environment names must be non-empty and cannot contain "
-                "'='");
-        name = xstrndup(element->name->string, element->name->string_size);
-        value_string = dup_json_string(element->value, "environment value", false);
-        assignment = xasprintf("%s=%s", name, value_string);
-        vec_push(env, assignment);
-        free(name);
-        free(value_string);
-    }
-}
-
 static void apply_option(struct lager_config *cfg, const struct config_option *option, struct json_value_s *value)
 {
     void *field = option_field(cfg, option);
@@ -188,9 +150,6 @@ static void apply_option(struct lager_config *cfg, const struct config_option *o
         free(text);
         break;
     }
-    case CONFIG_ENVIRONMENT:
-        parse_environment(field, value);
-        break;
     }
 }
 
@@ -290,7 +249,6 @@ static void write_json_string(FILE *file, const char *value)
 static void write_option_value(FILE *file, const struct lager_config *cfg, const struct config_option *option)
 {
     const void *field = const_option_field(cfg, option);
-    size_t i;
 
     switch (option->type) {
     case CONFIG_NULLABLE_STRING:
@@ -305,25 +263,6 @@ static void write_option_value(FILE *file, const struct lager_config *cfg, const
     case CONFIG_POLICY:
         write_json_string(file, policy_name(*(const enum feature_policy *)field));
         break;
-    case CONFIG_ENVIRONMENT: {
-        const struct strvec *env = field;
-
-        fputc('{', file);
-        for (i = 0; i < env->len; i++) {
-            const char *equals = strchr(env->items[i], '=');
-            char *name;
-
-            if (i)
-                fputs(", ", file);
-            name = xstrndup(env->items[i], (size_t)(equals - env->items[i]));
-            write_json_string(file, name);
-            fputs(": ", file);
-            write_json_string(file, equals + 1);
-            free(name);
-        }
-        fputc('}', file);
-        break;
-    }
     }
 }
 
@@ -412,18 +351,6 @@ void load_lager_config(struct lager_config *cfg)
     *cfg = state.cfg;
 }
 
-static void parse_cli_json(struct lager_config *cfg, const struct config_option *option, const char *text)
-{
-    struct json_parse_result_s result = {0};
-    struct json_value_s *value;
-
-    value = json_parse_ex(text, strlen(text), json_parse_flags_default, NULL, NULL, &result);
-    if (!value)
-        die("invalid JSON value for %s", option->name);
-    apply_option(cfg, option, value);
-    free(value);
-}
-
 static void set_cli_option(struct config_state *state, const struct config_option *option, size_t index,
                            const char *value)
 {
@@ -441,9 +368,6 @@ static void set_cli_option(struct config_state *state, const struct config_optio
     case CONFIG_POLICY:
         *(enum feature_policy *)field = parse_policy(value, option->name);
         break;
-    case CONFIG_ENVIRONMENT:
-        parse_cli_json(&state->cfg, option, value);
-        break;
     }
     state->present[index] = true;
 }
@@ -453,7 +377,6 @@ static void copy_option(struct lager_config *target, const struct lager_config *
 {
     void *to = option_field(target, option);
     const void *from = const_option_field(source, option);
-    size_t i;
 
     switch (option->type) {
     case CONFIG_NULLABLE_STRING:
@@ -464,15 +387,6 @@ static void copy_option(struct lager_config *target, const struct lager_config *
     case CONFIG_POLICY:
         *(enum feature_policy *)to = *(const enum feature_policy *)from;
         break;
-    case CONFIG_ENVIRONMENT: {
-        struct strvec *target_vec = to;
-        const struct strvec *source_vec = from;
-
-        vec_clear(target_vec);
-        for (i = 0; i < source_vec->len; i++)
-            vec_push_copy(target_vec, source_vec->items[i]);
-        break;
-    }
     }
 }
 
@@ -508,46 +422,6 @@ static void print_config_help(const struct config_state *state, const char *name
     free_lager_config(&defaults);
 }
 
-static bool environment_key(const char *name, const char **key_out)
-{
-    static const char prefix[] = "environment.";
-
-    if (strncmp(name, prefix, sizeof(prefix) - 1) || !name[sizeof(prefix) - 1])
-        return false;
-    *key_out = name + sizeof(prefix) - 1;
-    return true;
-}
-
-static void unset_environment(struct config_state *state, const char *key)
-{
-    struct strvec *env = &state->cfg.env;
-    size_t key_len = strlen(key);
-    size_t i;
-
-    for (i = 0; i < env->len; i++) {
-        if (!strncmp(env->items[i], key, key_len) && env->items[i][key_len] == '=') {
-            free(env->items[i]);
-            memmove(&env->items[i], &env->items[i + 1], (env->len - i) * sizeof(*env->items));
-            env->len--;
-            break;
-        }
-    }
-    state->present[find_option("environment", strlen("environment"), NULL) - options] = env->len > 0;
-}
-
-static void set_environment(struct config_state *state, const char *key, const char *value)
-{
-    char *assignment;
-
-    if (!*key || strchr(key, '='))
-        die("config environment names must be non-empty and cannot contain "
-            "'='");
-    assignment = xasprintf("%s=%s", key, value);
-    env_set(&state->cfg.env, assignment);
-    free(assignment);
-    state->present[find_option("environment", strlen("environment"), NULL) - options] = true;
-}
-
 static void print_config_usage(void)
 {
     fprintf(stderr, "usage: lager -config [--json | --list | --edit]\n"
@@ -559,7 +433,6 @@ int handle_lager_config_cli(int argc, char **argv)
 {
     struct config_state state;
     const struct config_option *option;
-    const char *environment_name;
     char *path;
     size_t index;
 
@@ -584,31 +457,18 @@ int handle_lager_config_cli(int argc, char **argv)
             editor = "vi";
         execlp(editor, editor, path, (char *)NULL);
         die("exec %s: %s", editor, strerror(errno));
-    } else if (argc == 3 && environment_key(argv[2], &environment_name)) {
-        const char *value = env_get(&state.cfg.env, environment_name);
-
-        if (!value)
-            die("config key is not set: %s", argv[2]);
-        printf("%s\n", value);
     } else if (argc == 3) {
         print_config_help(&state, argv[2]);
     } else if (argc == 4 && !strcmp(argv[2], "--unset")) {
         struct lager_config defaults;
 
-        if (environment_key(argv[3], &environment_name)) {
-            unset_environment(&state, environment_name);
-        } else {
-            option = find_option(argv[3], strlen(argv[3]), &index);
-            if (!option)
-                die("unknown config key: %s", argv[3]);
-            init_lager_config(&defaults);
-            copy_option(&state.cfg, &defaults, option);
-            state.present[index] = false;
-            free_lager_config(&defaults);
-        }
-        save_config(path, &state);
-    } else if (argc == 4 && environment_key(argv[2], &environment_name)) {
-        set_environment(&state, environment_name, argv[3]);
+        option = find_option(argv[3], strlen(argv[3]), &index);
+        if (!option)
+            die("unknown config key: %s", argv[3]);
+        init_lager_config(&defaults);
+        copy_option(&state.cfg, &defaults, option);
+        state.present[index] = false;
+        free_lager_config(&defaults);
         save_config(path, &state);
     } else if (argc == 4) {
         option = find_option(argv[2], strlen(argv[2]), &index);
