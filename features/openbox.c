@@ -18,7 +18,7 @@ extern char **environ;
 
 void feature_openbox_host_resolve(struct host_ctx *ctx)
 {
-    if (!ctx->guest_x11)
+    if (!ctx->x11)
         return;
     feature_require_executable("/usr/bin/openbox", "openbox", "x11 support", "openbox");
 }

@@ -43,7 +43,7 @@ static bool feature_applies(const struct feature *feature, const struct host_ctx
     case FEATURE_GPU_COMPAT:
         return ctx->opts->gpu_compat != FEATURE_OFF;
     case FEATURE_X11:
-        return ctx->guest_x11;
+        return ctx->x11;
     }
     die("invalid feature condition");
 }
