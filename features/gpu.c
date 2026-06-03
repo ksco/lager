@@ -38,7 +38,7 @@ void feature_gpu_host_add_qemu_options(struct host_ctx *ctx)
                        ctx->gpu_hostmem_mib, ctx->gpu_hostmem_mib, native_context_suffix, res_suffix ? res_suffix : "");
     free(res_suffix);
     vec_push_copy(ctx->qemu, "-display");
-    vec_push_copy(ctx->qemu, ctx->header->flags & CFG_WAYLAND ? "gtk,gl=on,zoom-to-fit=off" : "egl-headless,gl=on");
+    vec_push_copy(ctx->qemu, ctx->header->flags & CFG_WAYLAND ? "sdl,gl=on" : "egl-headless,gl=on");
     vec_push_copy(ctx->qemu, "-device");
     vec_push(ctx->qemu, device);
 }

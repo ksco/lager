@@ -45,7 +45,7 @@ void feature_wayland_host_add_qemu_options(struct host_ctx *ctx)
     vec_push_copy(ctx->qemu, "-device");
     vec_push_copy(ctx->qemu, "virtio-keyboard-pci");
     vec_push_copy(ctx->qemu, "-device");
-    vec_push_copy(ctx->qemu, "virtio-tablet-pci");
+    vec_push_copy(ctx->qemu, "virtio-mouse-pci");
 }
 
 static void setup_guest_udev(void)
