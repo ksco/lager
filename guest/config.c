@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
-#include "guest_config.h"
+#include "config.h"
 
-#include "log.h"
+#include "../misc/log.h"
 
 #include <stdint.h>
 #include <string.h>

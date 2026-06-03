@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "gpu.h"
 
-#include "../log.h"
+#include "../misc/log.h"
 
 #include <errno.h>
 #include <glob.h>

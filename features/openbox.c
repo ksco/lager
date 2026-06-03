@@ -3,9 +3,9 @@
 
 #include "common.h"
 
-#include "../guest_services.h"
-#include "../lager.h"
-#include "../log.h"
+#include "../guest/services.h"
+#include "../misc/config.h"
+#include "../misc/log.h"
 
 #include <errno.h>
 #include <fcntl.h>

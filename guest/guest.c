@@ -9,14 +9,14 @@
  */
 
 #define _GNU_SOURCE
-#include "features.h"
-#include "features/common.h"
-#include "guest_config.h"
-#include "guest_exec.h"
+#include "../features/registry.h"
+#include "../features/common.h"
+#include "config.h"
+#include "exec.h"
 #include "guest.h"
-#include "lager.h"
-#include "log.h"
-#include "utils.h"
+#include "../misc/config.h"
+#include "../misc/log.h"
+#include "../misc/utils.h"
 
 #include <errno.h>
 #include <fcntl.h>

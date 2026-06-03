@@ -1,5 +1,5 @@
-#include "guest.h"
-#include "host.h"
+#include "guest/guest.h"
+#include "host/host.h"
 
 #include <unistd.h>
 

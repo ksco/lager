@@ -1,8 +1,8 @@
 #ifndef LAGER_LAUNCHER_H
 #define LAGER_LAUNCHER_H
 
-#include "features.h"
-#include "utils.h"
+#include "../features/registry.h"
+#include "../misc/utils.h"
 
 #include <stdbool.h>
 #include <sys/types.h>

@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "modules.h"
 
-#include "log.h"
-#include "utils.h"
+#include "../misc/log.h"
+#include "../misc/utils.h"
 
 #include <dirent.h>
 #include <stdlib.h>

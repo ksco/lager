@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "initramfs.h"
 
-#include "log.h"
+#include "../misc/log.h"
 #include "modules.h"
 
 #include <errno.h>

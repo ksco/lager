@@ -1,7 +1,7 @@
 #ifndef LAGER_FEATURES_COMMON_H
 #define LAGER_FEATURES_COMMON_H
 
-#include "../guest_services.h"
+#include "../guest/services.h"
 
 #include <stdbool.h>
 #include <sys/types.h>

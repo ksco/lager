@@ -9,15 +9,14 @@
  */
 
 #define _GNU_SOURCE
-#include "config.h"
-#include "features.h"
-#include "guest_config.h"
+#include "../misc/config.h"
+#include "../features/registry.h"
+#include "../guest/config.h"
 #include "host.h"
 #include "initramfs.h"
-#include "lager.h"
 #include "launcher.h"
-#include "log.h"
-#include "utils.h"
+#include "../misc/log.h"
+#include "../misc/utils.h"
 
 #include <errno.h>
 #include <glob.h>

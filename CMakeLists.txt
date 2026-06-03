@@ -4,16 +4,16 @@ project(lager C)
 
 add_executable(lager
     lager.c
-    log.c
-    host.c
-    launcher.c
-    guest_config.c
-    initramfs.c
-    guest.c
-    guest_exec.c
-    guest_net.c
-    guest_services.c
-    config.c
+    misc/log.c
+    host/host.c
+    host/launcher.c
+    host/initramfs.c
+    host/modules.c
+    guest/config.c
+    guest/guest.c
+    guest/exec.c
+    guest/services.c
+    misc/config.c
     features/audio.c
     features/box64.c
     features/common.c
@@ -25,8 +25,7 @@ add_executable(lager
     features/openbox.c
     features/registry.c
     features/x11.c
-    modules.c
-    utils.c
+    misc/utils.c
 )
 target_compile_features(lager PRIVATE c_std_11)
 target_compile_options(lager PRIVATE -O2 -Wall -Wextra -Werror)

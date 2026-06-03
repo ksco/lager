@@ -3,8 +3,8 @@
 
 #include "common.h"
 
-#include "../guest_services.h"
-#include "../log.h"
+#include "../guest/services.h"
+#include "../misc/log.h"
 
 #include <errno.h>
 #include <glob.h>
@@ -48,8 +48,7 @@ void feature_audio_host_resolve(struct host_ctx *ctx)
     feature_require_executable("/usr/bin/pulseaudio", "pulseaudio", "audio support", "pulseaudio");
     ctx->audio_backend = host_audio_backend();
     if (!ctx->audio_backend)
-        die("no PipeWire or PulseAudio server found; audio requires a running "
-            "host audio server");
+        die("no PipeWire or PulseAudio server found; audio requires a running host audio server");
 }
 
 void feature_audio_host_add_env(struct host_ctx *ctx)

@@ -1,10 +1,10 @@
 #define _GNU_SOURCE
 #include "gpu_compat.h"
 
-#include "../features.h"
-#include "../log.h"
-#include "../modules.h"
-#include "../utils.h"
+#include "registry.h"
+#include "../misc/log.h"
+#include "../host/modules.h"
+#include "../misc/utils.h"
 
 #include <arpa/inet.h>
 #include <elf.h>

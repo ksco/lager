@@ -1,13 +1,12 @@
-#ifndef LAGER_FEATURES_H
-#define LAGER_FEATURES_H
+#ifndef LAGER_FEATURES_REGISTRY_H
+#define LAGER_FEATURES_REGISTRY_H
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "config.h"
-#include "guest_config.h"
-#include "lager.h"
-#include "utils.h"
+#include "../misc/config.h"
+#include "../guest/config.h"
+#include "../misc/utils.h"
 
 struct host_ctx {
     struct lager_config *opts;
@@ -37,3 +36,4 @@ void features_guest_setup(struct guest_ctx *ctx);
 void features_guest_stop(struct guest_ctx *ctx);
 
 #endif
+

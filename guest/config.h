@@ -1,8 +1,8 @@
 #ifndef LAGER_GUEST_CONFIG_H
 #define LAGER_GUEST_CONFIG_H
 
-#include "lager.h"
-#include "utils.h"
+#include "../misc/config.h"
+#include "../misc/utils.h"
 
 struct guest_config {
     struct config_header header;

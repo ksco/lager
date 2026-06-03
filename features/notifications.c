@@ -3,8 +3,8 @@
 
 #include "common.h"
 
-#include "../guest_services.h"
-#include "../log.h"
+#include "../guest/services.h"
+#include "../misc/log.h"
 
 #include <errno.h>
 #include <stdlib.h>

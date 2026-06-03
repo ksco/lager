@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
-#include "../features.h"
+#include "registry.h"
 
-#include "../log.h"
+#include "../misc/log.h"
 
 #include "audio.h"
 #include "box64.h"

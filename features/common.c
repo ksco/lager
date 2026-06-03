@@ -1,8 +1,8 @@
 #define _GNU_SOURCE
 #include "common.h"
 
-#include "../log.h"
-#include "../utils.h"
+#include "../misc/log.h"
+#include "../misc/utils.h"
 
 #include <errno.h>
 #include <grp.h>

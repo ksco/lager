@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "launcher.h"
 
-#include "log.h"
+#include "../misc/log.h"
 
 #include <errno.h>
 #include <signal.h>

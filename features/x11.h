@@ -1,7 +1,7 @@
 #ifndef LAGER_FEATURES_X11_H
 #define LAGER_FEATURES_X11_H
 
-#include "../features.h"
+#include "registry.h"
 
 void feature_x11_host_resolve(struct host_ctx *ctx);
 void feature_x11_host_add_env(struct host_ctx *ctx);
