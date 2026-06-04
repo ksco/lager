@@ -171,7 +171,7 @@ static void apply_config(struct config_state *state, struct json_value_s *root)
 
         option = find_option(element->name->string, element->name->string_size, &index);
         if (!option)
-            die("unknown config key: %.*s", (int)element->name->string_size, element->name->string);
+            continue;
         apply_option(&state->cfg, option, element->value);
         state->present[index] = true;
     }
