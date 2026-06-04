@@ -10,9 +10,23 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+static bool gpu_uses_venus_zink(const struct host_ctx *ctx)
+{
+    return !ctx->qemu_has_drm_native_context;
+}
+
 void feature_gpu_host_add_env(struct host_ctx *ctx)
 {
     char *assignment;
+
+    if (!gpu_uses_venus_zink(ctx)) {
+        env_unset(ctx->env, "MESA_LOADER_DRIVER_OVERRIDE");
+        env_unset(ctx->env, "LIBGL_KOPPER_DRI2");
+        env_unset(ctx->env, "VK_DRIVER_FILES");
+        env_unset(ctx->env, "VK_ICD_FILENAMES");
+        env_unset(ctx->env, "HK_SYSMEM");
+        return;
+    }
 
     env_set(ctx->env, "MESA_LOADER_DRIVER_OVERRIDE=zink");
     env_set(ctx->env, "LIBGL_KOPPER_DRI2=true");
@@ -28,14 +42,14 @@ void feature_gpu_host_add_env(struct host_ctx *ctx)
 void feature_gpu_host_add_qemu_options(struct host_ctx *ctx)
 {
     char *res_suffix = NULL;
-    const char *native_context_suffix = ctx->qemu_has_drm_native_context ? ",drm_native_context=on" : "";
+    const char *context_suffix = gpu_uses_venus_zink(ctx) ? ",venus=on" : ",drm_native_context=on";
     char *device;
 
     if ((ctx->header->flags & CFG_WAYLAND) && ctx->header->resolution_width > 0)
         res_suffix = xasprintf(",xres=%u,yres=%u", ctx->header->resolution_width, ctx->header->resolution_height);
-    device = xasprintf("virtio-gpu-gl-pci,blob=on,venus=on,"
-                       "hostmem=%luM,max_hostmem=%luM%s%s",
-                       ctx->gpu_hostmem_mib, ctx->gpu_hostmem_mib, native_context_suffix, res_suffix ? res_suffix : "");
+    device = xasprintf("virtio-gpu-gl-pci,blob=on%s,"
+                       "hostmem=%luM,max_hostmem=%luM%s",
+                       context_suffix, ctx->gpu_hostmem_mib, ctx->gpu_hostmem_mib, res_suffix ? res_suffix : "");
     free(res_suffix);
     vec_push_copy(ctx->qemu, "-display");
     vec_push_copy(ctx->qemu, ctx->header->flags & CFG_WAYLAND ? "sdl,gl=on" : "egl-headless,gl=on");
